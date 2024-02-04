@@ -1,20 +1,16 @@
-# Jekyll::Og::Image
+# Jekyll Og Image
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/jekyll/og/image`. To experiment with that code, run `bin/console` for an interactive prompt.
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
 
 Install the gem and add to the application's Gemfile by executing:
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+    $ bundle add jekyll-og-image
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+    $ gem install jekyll-og-image
 
 ## Usage
 

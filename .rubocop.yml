@@ -4,3 +4,7 @@ inherit_gem:
 AllCops:
   TargetRubyVersion: 3.2
   NewCops: enable
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
