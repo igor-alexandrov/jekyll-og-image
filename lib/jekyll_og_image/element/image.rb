@@ -1,33 +1,55 @@
 # frozen_string_literal: true
 
-require "vips"
-
 class JekyllOgImage::Element::Image < JekyllOgImage::Element::Base
-  def initialize(width, height, color: "#ffffff")
-    @canvas = Vips::Image.black(width, height).ifthenelse([ 0, 0, 0 ], hex_to_rgb(color))
+  def initialize(canvas, source, gravity: :nw, width:, height:)
+    @canvas = canvas
+    @gravity = gravity
+    @source = source
+    @width = width
+    @height = height
+
+    validate_gravity!
   end
 
-  def text(message, **opts, &block)
-    text = JekyllOgImage::Element::Text.new(
-      @canvas, message, **opts
-    )
+  def apply(&block)
+    image = Vips::Image.new_from_buffer(@source, "")
+    result = block.call(@canvas, image) if block_given?
 
-    @canvas = text.apply(&block)
+    if @width && @height
+      ratio = calculate_ratio(image, @width, @height, :min)
+      image = image.resize(ratio)
+    end
 
-    self
+    x, y = result ? [ result.fetch(:x, 0), result.fetch(:y, 0) ] : [ 0, 0 ]
+
+    if gravity_nw?
+      @canvas.composite(image, :over, x: [ x ], y: [ y ]).flatten
+    elsif gravity_ne?
+      x = @canvas.width - image.width - x
+      @canvas.composite(image, :over, x: [ x ], y: [ y ]).flatten
+    elsif gravity_sw?
+      y = @canvas.height - image.height - y
+      @canvas.composite(image, :over, x: [ x ], y: [ y ]).flatten
+    elsif gravity_se?
+      x = @canvas.width - image.width - x
+      y = @canvas.height - image.height - y
+      @canvas.composite(image, :over, x: [ x ], y: [ y ]).flatten
+    end
   end
 
-  def border(width, position: :bottom, fill: "#000000")
-    @canvas = JekyllOgImage::Element::Border.new(
-      @canvas, width,
-      position: position,
-      fill: fill
-    ).apply
+  private
 
-    self
+  VALID_GRAVITY.each do |gravity|
+    define_method("gravity_#{gravity}?") do
+      @gravity == gravity
+    end
   end
 
-  def save(filename)
-    @canvas.write_to_file(filename)
+  def calculate_ratio(image, width, height, mode)
+    if mode == :min
+      [ width.to_f / image.width, height.to_f / image.height ].min
+    else
+      [ width.to_f / image.width, height.to_f / image.height ].max
+    end
   end
 end

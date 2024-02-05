@@ -47,6 +47,7 @@ og_image:
 ```yaml
 og_image:
   output_dir: "assets/images/og"
+  image: "/assets/images/igor.jpeg"
   domain: "igor.works"
   border_bottom:
     width: 20

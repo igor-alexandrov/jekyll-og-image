@@ -35,37 +35,48 @@ class JekyllOgImage::Generator < Jekyll::Generator
   def generate_image_for_post(site, post, path)
     date = post.date.strftime("%B %d, %Y")
 
-    image = JekyllOgImage::Element::Image.new(1200, 600)
+    canvas = JekyllOgImage::Element::Canvas.new(1200, 600)
       .border(JekyllOgImage.config.border_bottom["width"],
         position: :bottom,
         fill: JekyllOgImage.config.border_bottom["fill"]
       )
-      .text(post.data["title"], width: 1040, color: "#2f313d", dpi: 500, font: "Helvetica, Bold") do |_canvas, _text|
-        {
-          x: 80,
-          y: 100
-        }
-      end
-      .text(date, gravity: :sw, color: "#535358", dpi: 150, font: "Helvetica, Regular") do |_canvas, _text|
-        {
-          x: 80,
-          y: post.data["tags"].any? ? 150 : 100
-        }
-      end
+
+    if JekyllOgImage.config.image
+      canvas = canvas.image(
+        File.read(File.join(site.config["source"], JekyllOgImage.config.image)),
+        gravity: :ne,
+        width: 150,
+        height: 150
+      ) { |_canvas, _text| { x: 80, y: 100 } }
+    end
+
+    canvas = canvas.text(post.data["title"],
+      width: JekyllOgImage.config.image ? 870 : 1040,
+      color: "#2f313d",
+      dpi: 400,
+      font: "Helvetica, Bold"
+    ) { |_canvas, _text| { x: 80, y: 100 } }
+
+    canvas = canvas.text(date,
+      gravity: :sw,
+      color: "#535358",
+      dpi: 150,
+      font: "Helvetica, Regular"
+    ) { |_canvas, _text| { x: 80, y: post.data["tags"].any? ? 150 : 100 } }
 
     if post.data["tags"].any?
       tags = post.data["tags"].map { |tag| "##{tag}" }.join(" ")
 
-      image = image.text(tags, gravity: :sw, color: "#535358", dpi: 150, font: "Helvetica, Regular") do |_canvas, _text|
-        {
-          x: 80,
-          y: 100
-        }
-      end
+      canvas = canvas.text(tags,
+        gravity: :sw,
+        color: "#535358",
+        dpi: 150,
+        font: "Helvetica, Regular"
+      ) { |_canvas, _text| { x: 80, y: 100 } }
     end
 
     if JekyllOgImage.config.domain
-      image = image.text(JekyllOgImage.config.domain, gravity: :se, color: "#535358", dpi: 150, font: "Helvetica, Regular") do |_canvas, _text|
+      canvas = canvas.text(JekyllOgImage.config.domain, gravity: :se, color: "#535358", dpi: 150, font: "Helvetica, Regular") do |_canvas, _text|
         {
           x: 80,
           y: post.data["tags"].any? ? 150 : 100
@@ -73,6 +84,6 @@ class JekyllOgImage::Generator < Jekyll::Generator
       end
     end
 
-    image.save(path)
+    canvas.save(path)
   end
 end

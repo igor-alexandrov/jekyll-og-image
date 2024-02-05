@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class JekyllOgImage::Element::Text < JekyllOgImage::Element::Base
-  VALID_GRAVITY = %i[nw ne sw se].freeze
-
   def initialize(canvas, message, gravity: :nw, width: nil, dpi: nil, color: "#000000", font: nil)
     @canvas = canvas
     @gravity = gravity
@@ -47,12 +45,6 @@ class JekyllOgImage::Element::Text < JekyllOgImage::Element::Base
   VALID_GRAVITY.each do |gravity|
     define_method("gravity_#{gravity}?") do
       @gravity == gravity
-    end
-  end
-
-  def validate_gravity!
-    unless VALID_GRAVITY.include?(@gravity)
-      raise ArgumentError, "Invalid gravity: #{@gravity.inspect}"
     end
   end
 end
