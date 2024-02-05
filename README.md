@@ -20,6 +20,42 @@ plugins:
   - jekyll-og-image
 ```
 
+## Examples
+
+### Single Color
+
+```yaml
+og_image:
+  output_dir: "assets/images/og"
+  domain: "igor.works"
+  border_bottom:
+    width: 20
+    fill:
+      - "#4285F4"
+```
+
+![Example 2](examples/2.png)
+
+### Multiple Colors
+
+```yaml
+og_image:
+  output_dir: "assets/images/og"
+  domain: "igor.works"
+  border_bottom:
+    width: 20
+    fill:
+      - "#820C02"
+      - "#A91401"
+      - "#D51F06"
+      - "#DE3F24"
+      - "#EDA895"
+```
+
+![Example 1](examples/1.png)
+
+
+
 ## Contributing
 
 * Fork it (https://github.com/igor-alexandrov/jekyll-og-image)

@@ -46,7 +46,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
           y: 100
         }
       end
-      .text(date, gravity: :sw, color: "#535358", dpi: 200, font: "Helvetica, Regular") do |_canvas, _text|
+      .text(date, gravity: :sw, color: "#535358", dpi: 150, font: "Helvetica, Regular") do |_canvas, _text|
         {
           x: 80,
           y: post.data["tags"].any? ? 150 : 100
@@ -65,7 +65,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
     end
 
     if JekyllOgImage.config.domain
-      image = image.text(JekyllOgImage.config.domain, gravity: :se, color: "#535358", dpi: 200, font: "Helvetica, Regular") do |_canvas, _text|
+      image = image.text(JekyllOgImage.config.domain, gravity: :se, color: "#535358", dpi: 150, font: "Helvetica, Regular") do |_canvas, _text|
         {
           x: 80,
           y: post.data["tags"].any? ? 150 : 100
