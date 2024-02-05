@@ -17,9 +17,9 @@ class JekyllOgImage::Element::Image < JekyllOgImage::Element::Base
     self
   end
 
-  def border(size, position: :bottom, fill: "#000000")
+  def border(width, position: :bottom, fill: "#000000")
     @canvas = JekyllOgImage::Element::Border.new(
-      @canvas, size,
+      @canvas, width,
       position: position,
       fill: fill
     ).apply

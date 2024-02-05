@@ -36,7 +36,10 @@ class JekyllOgImage::Generator < Jekyll::Generator
     date = post.date.strftime("%B %d, %Y")
 
     image = JekyllOgImage::Element::Image.new(1200, 600)
-      .border(20, position: :bottom, fill: JekyllOgImage.config.border_bottom["fill"])
+      .border(JekyllOgImage.config.border_bottom["width"],
+        position: :bottom,
+        fill: JekyllOgImage.config.border_bottom["fill"]
+      )
       .text(post.data["title"], width: 1040, color: "#2f313d", dpi: 500, font: "Helvetica, Bold") do |_canvas, _text|
         {
           x: 80,
