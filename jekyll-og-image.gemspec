@@ -23,11 +23,10 @@ Gem::Specification.new do |spec|
         f.start_with?(*%w[bin/ test/ spec/ features/ .git .github appveyor Gemfile])
     end
   end
-  spec.bindir = "exe"
-  spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
+
   spec.require_paths = [ "lib" ]
 
-  # Uncomment to register a new dependency of your gem
+  spec.add_dependency "jekyll-seo-tag", "~> 2.8"
   spec.add_dependency "zeitwerk", "~> 2.6"
   spec.add_dependency "anyway_config", "~> 2.6"
   spec.add_dependency "ruby-vips", "~> 2.2.0"

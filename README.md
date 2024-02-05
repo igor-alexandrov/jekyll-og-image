@@ -17,8 +17,13 @@ And then add this line to your site's `_config.yml`:
 
 ```yaml
 plugins:
+  - jekyll-seo-tag
   - jekyll-og-image
 ```
+
+## Usage
+
+Jekyll OG Image works together with [jekyll-seo-tag](https://github.com/jekyll/jekyll-seo-tag) plugin. It automatically generates open graph images for posts and inserts them into the posts metadata.
 
 ## Examples
 
