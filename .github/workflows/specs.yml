@@ -1,0 +1,29 @@
+name: Specs
+
+on:
+  workflow_call:
+  schedule:
+    - cron: "0 3 * * 1" # Every monday at 3 AM
+  push:
+    branches:
+      - main
+
+  pull_request:
+
+jobs:
+  rubocop:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby:
+          - 3.2.0
+          - 3.3.0
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+    - name: RuboCop
+      run: bin/rspec -f github
