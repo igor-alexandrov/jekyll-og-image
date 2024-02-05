@@ -5,15 +5,14 @@ class JekyllOgImage::Generator < Jekyll::Generator
 
   def generate(site)
     base_path = File.join(
-      site.config["source"],
       JekyllOgImage.config.output_dir,
       "posts"
     )
 
-    FileUtils.mkdir_p base_path
+    FileUtils.mkdir_p File.join(site.config["source"], base_path)
 
     site.posts.docs.each do |post|
-      path = File.join(base_path, "#{post.data['slug']}.png")
+      path = File.join(site.config["source"], base_path, "#{post.data['slug']}.png")
 
       if !File.exist?(path) || JekyllOgImage.config.force?
         generate_image_for_post(site, post, path)
@@ -22,7 +21,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
       end
 
       post.data["image"] ||= {
-        "path" => path,
+        "path" => File.join(base_path, "#{post.data['slug']}.png"),
         "width" => 1200,
         "height" => 600,
         "alt" => post.data["title"]
