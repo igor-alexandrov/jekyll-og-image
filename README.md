@@ -2,6 +2,7 @@
 
 A Jekyll plugin to automatically generate open graph images for posts.
 
+[![Gem Version](https://badge.fury.io/rb/jekyll-og-image.svg)](https://badge.fury.io/rb/jekyll-og-image)
 [![Lint](https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/lint.yml)
 [![Specs](https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/specs.yml/badge.svg?branch=main)](https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/specs.yml)
 
