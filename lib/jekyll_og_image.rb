@@ -25,6 +25,4 @@ end
 
 Jekyll::Hooks.register(:site, :after_init) do |site|
   JekyllOgImage.config = JekyllOgImage::Config.new(site.config["og_image"])
-
-  site.config["exclude"] << JekyllOgImage.config.output_dir
 end

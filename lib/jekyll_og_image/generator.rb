@@ -15,9 +15,10 @@ class JekyllOgImage::Generator < Jekyll::Generator
       path = File.join(site.config["source"], base_path, "#{post.data['slug']}.png")
 
       if !File.exist?(path) || JekyllOgImage.config.force?
+        Jekyll.logger.info "Jekyll Og Image:", "Generating image #{path}"
         generate_image_for_post(site, post, path)
       else
-        Jekyll.logger.info "Jekyll Og Image:", "Skipping image generation for #{post.data['title']} as it already exists."
+        Jekyll.logger.info "Jekyll Og Image:", "Skipping image generation #{path} as it already exists."
       end
 
       post.data["image"] ||= {
