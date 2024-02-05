@@ -23,9 +23,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
+
     - name: RuboCop
       run: bin/rubocop -f github

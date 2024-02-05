@@ -11,7 +11,7 @@ on:
   pull_request:
 
 jobs:
-  rubocop:
+  rspec:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -21,9 +21,23 @@ jobs:
     timeout-minutes: 5
     steps:
     - uses: actions/checkout@v4
+
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
-    - name: RuboCop
+
+    - name: Update apt
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run:
+        sudo apt-get update -qq
+
+    - name: Install libvips
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run:
+        sudo apt-get install --fix-missing libvips
+
+    - name: RSpec
       run: bin/rspec -f github
