@@ -2,10 +2,10 @@ PATH
   remote: .
   specs:
     jekyll-og-image (1.0.0)
-      anyway_config (>= 2.0.0)
+      anyway_config (~> 2.6)
       jekyll (>= 3.4, < 5.0)
-      ruby-vips (>= 2.2.0)
-      zeitwerk
+      ruby-vips (~> 2.2.0)
+      zeitwerk (~> 2.6)
 
 GEM
   remote: https://rubygems.org/
