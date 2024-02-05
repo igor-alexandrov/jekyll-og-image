@@ -40,4 +40,4 @@ jobs:
         sudo apt-get install --fix-missing libvips
 
     - name: RSpec
-      run: bin/rspec -f github
+      run: bin/rspec
