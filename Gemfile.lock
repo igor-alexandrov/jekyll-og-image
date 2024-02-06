@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jekyll-og-image (1.0.4)
+    jekyll-og-image (1.0.5)
       anyway_config (~> 2.6)
       jekyll (>= 3.4, < 5.0)
       jekyll-seo-tag (~> 2.8)
