@@ -21,4 +21,20 @@ class JekyllOgImage::Element::Base
       raise ArgumentError, "Invalid gravity: #{@gravity.inspect}"
     end
   end
+
+  def composite_with_gravity(canvas, overlay, x, y)
+    if gravity_nw?
+      canvas.composite(overlay, :over, x: [ x ], y: [ y ]).flatten
+    elsif gravity_ne?
+      x = canvas.width - overlay.width - x
+      canvas.composite(overlay, :over, x: [ x ], y: [ y ]).flatten
+    elsif gravity_sw?
+      y = canvas.height - overlay.height - y
+      canvas.composite(overlay, :over, x: [ x ], y: [ y ]).flatten
+    elsif gravity_se?
+      x = canvas.width - overlay.width - x
+      y = canvas.height - overlay.height - y
+      canvas.composite(overlay, :over, x: [ x ], y: [ y ]).flatten
+    end
+  end
 end

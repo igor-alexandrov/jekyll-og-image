@@ -46,7 +46,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
         File.read(File.join(site.config["source"], JekyllOgImage.config.image)),
         gravity: :ne,
         width: 150,
-        height: 150
+        height: 150,
+        radius: 50
       ) { |_canvas, _text| { x: 80, y: 100 } }
     end
 

@@ -1,19 +1,21 @@
 # frozen_string_literal: true
 
 class JekyllOgImage::Element::Image < JekyllOgImage::Element::Base
-  def initialize(canvas, source, gravity: :nw, width:, height:)
-    @canvas = canvas
+  def initialize(source, gravity: :nw, width:, height:, radius:)
     @gravity = gravity
     @source = source
     @width = width
     @height = height
+    @radius = radius
 
     validate_gravity!
   end
 
-  def apply(&block)
+  def apply_to(canvas, &block)
     image = Vips::Image.new_from_buffer(@source, "")
-    result = block.call(@canvas, image) if block_given?
+    image = round_corners(image) if @radius
+
+    result = block.call(canvas, image) if block_given?
 
     if @width && @height
       ratio = calculate_ratio(image, @width, @height, :min)
@@ -22,19 +24,7 @@ class JekyllOgImage::Element::Image < JekyllOgImage::Element::Base
 
     x, y = result ? [ result.fetch(:x, 0), result.fetch(:y, 0) ] : [ 0, 0 ]
 
-    if gravity_nw?
-      @canvas.composite(image, :over, x: [ x ], y: [ y ]).flatten
-    elsif gravity_ne?
-      x = @canvas.width - image.width - x
-      @canvas.composite(image, :over, x: [ x ], y: [ y ]).flatten
-    elsif gravity_sw?
-      y = @canvas.height - image.height - y
-      @canvas.composite(image, :over, x: [ x ], y: [ y ]).flatten
-    elsif gravity_se?
-      x = @canvas.width - image.width - x
-      y = @canvas.height - image.height - y
-      @canvas.composite(image, :over, x: [ x ], y: [ y ]).flatten
-    end
+    composite_with_gravity(canvas, image, x, y)
   end
 
   private
@@ -43,6 +33,25 @@ class JekyllOgImage::Element::Image < JekyllOgImage::Element::Base
     define_method("gravity_#{gravity}?") do
       @gravity == gravity
     end
+  end
+
+  def round_corners(image)
+    mask = %(
+      <svg viewBox="0 0 #{image.width} #{image.height}">
+        <rect
+          rx="#{@radius}"
+          ry="#{@radius}"
+          x="0"
+          y="0"
+          width="#{image.width}"
+          height="#{image.height}"
+          fill="#fff"
+        />
+      </svg>
+    )
+
+    mask = Vips::Image.new_from_buffer(mask, "")
+    image.bandjoin mask[3]
   end
 
   def calculate_ratio(image, width, height, mode)

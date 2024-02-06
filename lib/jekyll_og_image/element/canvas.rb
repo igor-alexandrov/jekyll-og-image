@@ -8,31 +8,22 @@ class JekyllOgImage::Element::Canvas < JekyllOgImage::Element::Base
   end
 
   def image(source, **opts, &block)
-    image = JekyllOgImage::Element::Image.new(
-      @canvas, source, **opts
-    )
-
-    @canvas = image.apply(&block)
+    image = JekyllOgImage::Element::Image.new(source, **opts)
+    @canvas = image.apply_to(@canvas, &block)
 
     self
   end
 
   def text(message, **opts, &block)
-    text = JekyllOgImage::Element::Text.new(
-      @canvas, message, **opts
-    )
-
-    @canvas = text.apply(&block)
+    text = JekyllOgImage::Element::Text.new(message, **opts)
+    @canvas = text.apply_to(@canvas, &block)
 
     self
   end
 
-  def border(width, position: :bottom, fill: "#000000")
-    @canvas = JekyllOgImage::Element::Border.new(
-      @canvas, width,
-      position: position,
-      fill: fill
-    ).apply
+  def border(width, **opts, &block)
+    border = JekyllOgImage::Element::Border.new(width, **opts)
+    @canvas = border.apply_to(@canvas, &block)
 
     self
   end
