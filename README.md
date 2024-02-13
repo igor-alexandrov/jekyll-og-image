@@ -61,6 +61,31 @@ og_image:
 
 ![Example 1](examples/1.png)
 
+### Background Color and Text Colors
+
+```yaml
+og_image:
+  output_dir: "/assets/og"
+  image: "/assets/images/igor.jpeg"
+  canvas:
+    background_color: "#F9E065"
+  header:
+    font_family: "Roboto, Bold"
+    color: "#333333"
+  content:
+    font_family: "Roboto, Regular"
+    color: "#333333"
+  force: false
+  domain: "igor.works"
+  border_bottom:
+    width: 20
+    fill:
+      - "#002B7F"
+      - "#FCD116"
+      - "#CE1126"
+```
+
+![Example 3](examples/3.png)
 
 
 ## Contributing
