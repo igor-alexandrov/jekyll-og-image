@@ -7,7 +7,8 @@ class JekyllOgImage::Config < Anyway::Config
   attr_config force: false
   attr_config verbose: false
   attr_config canvas: {
-    background_color: "#FFFFFF"
+    background_color: "#FFFFFF",
+    background_image: nil
   }
   attr_config header: {
     font_family: "Helvetica, Bold",
@@ -19,13 +20,11 @@ class JekyllOgImage::Config < Anyway::Config
   }
   attr_config :image
   attr_config :domain
-  attr_config border_bottom: {
-    width: 20,
-    fill: [ "#211F1F", "#F4CBB2", "#AD5C51", "#9CDAF1", "#7DBBE6" ]
-  }
+  attr_config :border_bottom
 
   coerce_types canvas: {
-    background_color: { type: :string }
+    background_color: { type: :string },
+    background_image: { type: :string }
   }
 
   coerce_types header: {
@@ -44,4 +43,8 @@ class JekyllOgImage::Config < Anyway::Config
     width: { type: :integer },
     fill: { type: :string, array: true }
   }
+
+  def margin_bottom
+    80 + (border_bottom&.fetch("width", 0) || 0)
+  end
 end

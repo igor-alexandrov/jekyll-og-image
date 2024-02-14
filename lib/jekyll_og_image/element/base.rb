@@ -22,6 +22,14 @@ class JekyllOgImage::Element::Base
     end
   end
 
+  def calculate_ratio(image, width, height, mode)
+    if mode == :min
+      [ width.to_f / image.width, height.to_f / image.height ].min
+    else
+      [ width.to_f / image.width, height.to_f / image.height ].max
+    end
+  end
+
   def composite_with_gravity(canvas, overlay, x, y)
     if gravity_nw?
       canvas.composite(overlay, :over, x: [ x ], y: [ y ]).flatten

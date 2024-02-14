@@ -3,8 +3,19 @@
 require "vips"
 
 class JekyllOgImage::Element::Canvas < JekyllOgImage::Element::Base
-  def initialize(width, height, color: "#ffffff")
-    @canvas = Vips::Image.black(width, height).ifthenelse([ 0, 0, 0 ], hex_to_rgb(color))
+  def initialize(width, height, background_color: "#ffffff", background_image: nil)
+    @canvas = Vips::Image.black(width, height).ifthenelse([ 0, 0, 0 ], hex_to_rgb(background_color))
+
+    if background_image
+      overlay = Vips::Image.new_from_buffer(background_image, "")
+
+      ratio = calculate_ratio(overlay, width, height, :max)
+      overlay = overlay.resize(ratio)
+
+      @canvas = @canvas.composite(overlay, :over, x: [ 0 ], y: [ 0 ]).flatten
+    end
+
+    @canvas
   end
 
   def image(source, **opts, &block)

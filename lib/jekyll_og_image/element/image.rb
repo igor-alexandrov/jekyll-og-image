@@ -15,12 +15,12 @@ class JekyllOgImage::Element::Image < JekyllOgImage::Element::Base
     image = Vips::Image.new_from_buffer(@source, "")
     image = round_corners(image) if @radius
 
-    result = block.call(canvas, image) if block_given?
-
     if @width && @height
       ratio = calculate_ratio(image, @width, @height, :min)
       image = image.resize(ratio)
     end
+
+    result = block.call(canvas, image) if block_given?
 
     x, y = result ? [ result.fetch(:x, 0), result.fetch(:y, 0) ] : [ 0, 0 ]
 
@@ -52,13 +52,5 @@ class JekyllOgImage::Element::Image < JekyllOgImage::Element::Base
 
     mask = Vips::Image.new_from_buffer(mask, "")
     image.bandjoin mask[3]
-  end
-
-  def calculate_ratio(image, width, height, mode)
-    if mode == :min
-      [ width.to_f / image.width, height.to_f / image.height ].min
-    else
-      [ width.to_f / image.width, height.to_f / image.height ].max
-    end
   end
 end

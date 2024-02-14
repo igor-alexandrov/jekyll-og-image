@@ -23,10 +23,6 @@ RSpec.describe JekyllOgImage do
     FileUtils.rm_rf(File.join(source_dir, "assets"))
   end
 
-  it "has a version number" do
-    expect(JekyllOgImage::VERSION).not_to be nil
-  end
-
   it "generates OpenGraph images for published posts" do
     og_image.generate(site)
 
