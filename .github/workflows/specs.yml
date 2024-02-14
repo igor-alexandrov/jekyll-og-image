@@ -31,7 +31,19 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run:
-        sudo add-apt-repository ppa:lovell/cgif && sudo apt-get update && sudo apt-get install libcgif-dev
+        sudo add-apt-repository ppa:lovell/cgif #&& sudo apt-get update && sudo apt-get install libcgif-dev
+
+    - name: Update apt
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run:
+        sudo apt-get update -qq
+
+    - name: Install libcgif-dev
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run:
+        sudo apt-get install --fix-missing libcgif-dev
 
     - name: Install the build tools
       env:
