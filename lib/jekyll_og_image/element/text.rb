@@ -13,13 +13,16 @@ class JekyllOgImage::Element::Text < JekyllOgImage::Element::Base
   end
 
   def apply_to(canvas, &block)
-    text = Vips::Image.text(@message,
+    params = {
       font: @font,
       width: @width,
       dpi: @dpi,
-      wrap: :word,
       align: :low
-    )
+    }
+
+    params[:wrap] = :word if wrap_supported?
+
+    text = Vips::Image.text(@message, **params)
 
     text = text
       .new_from_image(hex_to_rgb(@color))
@@ -39,5 +42,11 @@ class JekyllOgImage::Element::Text < JekyllOgImage::Element::Base
     define_method("gravity_#{gravity}?") do
       @gravity == gravity
     end
+  end
+
+  def wrap_supported?
+    # Vips::Image.text supports wrapping since vips 8.14.0
+    # https://github.com/libvips/libvips/releases/tag/v8.14.0
+    Gem::Version.new(Vips.version_string) >= Gem::Version.new("8.14.0")
   end
 end

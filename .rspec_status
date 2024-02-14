@@ -1,7 +1,7 @@
 example_id                                     | status | run_time        |
 ---------------------------------------------- | ------ | --------------- |
-./spec/jekyll_og_image/config_spec.rb[1:1:1:1] | passed | 0.00069 seconds |
-./spec/jekyll_og_image/config_spec.rb[1:1:2:1] | passed | 0.00014 seconds |
-./spec/jekyll_og_image/version_spec.rb[1:1]    | passed | 0.00031 seconds |
-./spec/jekyll_og_image_spec.rb[1:1]            | passed | 0.26017 seconds |
-./spec/jekyll_og_image_spec.rb[1:2]            | passed | 0.04281 seconds |
+./spec/jekyll_og_image/config_spec.rb[1:1:1:1] | passed | 0.00046 seconds |
+./spec/jekyll_og_image/config_spec.rb[1:1:2:1] | passed | 0.00012 seconds |
+./spec/jekyll_og_image/version_spec.rb[1:1]    | passed | 0.00037 seconds |
+./spec/jekyll_og_image_spec.rb[1:1]            | passed | 0.2806 seconds  |
+./spec/jekyll_og_image_spec.rb[1:2]            | passed | 0.04456 seconds |
