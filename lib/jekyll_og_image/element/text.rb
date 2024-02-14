@@ -47,6 +47,6 @@ class JekyllOgImage::Element::Text < JekyllOgImage::Element::Base
   def wrap_supported?
     # Vips::Image.text supports wrapping since vips 8.14.0
     # https://github.com/libvips/libvips/releases/tag/v8.14.0
-    Gem::Version.new(Vips.version_string) >= Gem::Version.new("8.14.0")
+    Vips.at_least_libvips?(8, 14)
   end
 end
