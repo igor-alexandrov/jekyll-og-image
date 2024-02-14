@@ -27,76 +27,17 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
 
-    - name: Add the PPA for libcgif-dev
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run:
-        sudo add-apt-repository ppa:lovell/cgif #&& sudo apt-get update && sudo apt-get install libcgif-dev
-
     - name: Update apt
       env:
         DEBIAN_FRONTEND: noninteractive
       run:
         sudo apt-get update -qq
 
-    - name: Install libcgif-dev
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run:
-        sudo apt-get install --fix-missing libcgif-dev
-
-    - name: Install the build tools
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run:
-        sudo apt install build-essential ninja-build python3-pip bc wget && pip3 install meson
-
-    - name: Install the dependencies
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run:
-        sudo apt install \
-          libfftw3-dev \
-          libopenexr-dev \
-          libgsf-1-dev \
-          libglib2.0-dev \
-          liborc-dev \
-          libopenslide-dev \
-          libmatio-dev \
-          libwebp-dev \
-          libjpeg-turbo8-dev \
-          libexpat1-dev \
-          libexif-dev \
-          libtiff5-dev \
-          libcfitsio-dev \
-          libpoppler-glib-dev \
-          librsvg2-dev \
-          libpango1.0-dev \
-          libopenjp2-7-dev \
-          libimagequant-dev
-
     - name: Install libvips
+      env:
+        DEBIAN_FRONTEND: noninteractive
       run:
-        wget https://github.com/libvips/libvips/releases/download/v8.13.3/vips-8.13.3.tar.gz && \
-        tar xf vips-8.13.3.tar.gz && \
-        cd vips-8.13.3 && \
-        meson build --libdir=lib --buildtype=release -Dintrospection=disabled && \
-        cd build && \
-        meson compile && \
-        meson test && \
-        sudo meson install
-
-    # - name: Update apt
-    #   env:
-    #     DEBIAN_FRONTEND: noninteractive
-    #   run:
-    #     sudo apt-get update -qq
-
-    # - name: Install libvips
-    #   env:
-    #     DEBIAN_FRONTEND: noninteractive
-    #   run:
-    #     sudo apt-get install --fix-missing libvips
+        sudo apt-get install --fix-missing libvips
 
     - name: RSpec
       run: bin/rspec
