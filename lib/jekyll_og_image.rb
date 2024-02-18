@@ -11,18 +11,14 @@ loader.eager_load
 
 module JekyllOgImage
   def self.config
-    @config ||= JekyllOgImage::Config.new
+    @config ||= JekyllOgImage::Configuration.new({})
   end
 
   def self.config=(config)
     @config = config
   end
-
-  def self.configure
-    yield config
-  end
 end
 
 Jekyll::Hooks.register(:site, :after_init) do |site|
-  JekyllOgImage.config = JekyllOgImage::Config.new(site.config["og_image"])
+  JekyllOgImage.config = JekyllOgImage::Configuration.new(site.config["og_image"] || {})
 end

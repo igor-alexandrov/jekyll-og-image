@@ -28,7 +28,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "jekyll-seo-tag", "~> 2.8"
   spec.add_dependency "zeitwerk", "~> 2.6"
-  spec.add_dependency "anyway_config", "~> 2.6"
   spec.add_dependency "ruby-vips", "~> 2.2.0"
   spec.add_runtime_dependency "jekyll", ">= 3.4", "< 5.0"
 end
