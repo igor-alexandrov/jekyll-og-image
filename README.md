@@ -28,9 +28,16 @@ Jekyll OG Image works together with [jekyll-seo-tag](https://github.com/jekyll/j
 
 ## Examples
 
+Configuration can be defined on the site level or on the post level.
+
+For a side wide level configuration, edit your `_config.yml`, for a post level configuration, edit the post's front matter.
+
+```yaml
+
 ### Single Color
 
 ```yaml
+# _config.yml
 og_image:
   output_dir: "assets/images/og"
   domain: "igor.works"
@@ -45,6 +52,7 @@ og_image:
 ### Multiple Colors
 
 ```yaml
+# _config.yml
 og_image:
   output_dir: "assets/images/og"
   image: "/assets/images/igor.jpeg"
@@ -64,6 +72,7 @@ og_image:
 ### Background Color and Text Color
 
 ```yaml
+# _config.yml
 og_image:
   output_dir: "/assets/og"
   image: "/assets/images/igor.jpeg"
@@ -90,11 +99,10 @@ og_image:
 ### Background Image
 
 ```yaml
+# _config.yml
 og_image:
   output_dir: "/assets/og"
   image: "/assets/images/igor.jpeg"
-  canvas:
-    background_image: "/assets/images/bc_3.jpg"
   header:
     font_family: "Roboto, Bold"
     color: "#333333"
@@ -103,6 +111,18 @@ og_image:
     color: "#333333"
   force: false
   domain: "igor.works"
+
+# _posts/2024-02-15-traefik-tunning-for-rails-applications-part-1.md
+---
+title: Traefik Tuning for Rails Applications (part 1)
+layout: post
+tags:
+  - Rails
+  - Traefik
+  - Kamal
+og_image:
+  canvas:
+    background_image: "/assets/images/bc_3.jpg"
 ```
 
 ![Example 4](examples/4.png)
