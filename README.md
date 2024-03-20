@@ -32,8 +32,6 @@ Configuration can be defined on the site level or on the post level.
 
 For a side wide level configuration, edit your `_config.yml`, for a post level configuration, edit the post's front matter.
 
-```yaml
-
 ### Single Color
 
 ```yaml
