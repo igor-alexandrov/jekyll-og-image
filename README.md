@@ -26,6 +26,40 @@ plugins:
 
 Jekyll OG Image works together with [jekyll-seo-tag](https://github.com/jekyll/jekyll-seo-tag) plugin. It automatically generates open graph images for posts and inserts them into the posts metadata.
 
+## Configuration
+
+The plugin can be configured in the `_config.yml` file or in the post's front matter.
+
+The following configuration options are available:
+
+* `output_dir` – The directory where the generated images will be saved. Default: `assets/images/og`
+
+* `force` – If set to `true`, the plugin will generate an image for every post, even if the post already has an image. Default: `false`
+
+* `verbose`  – If set to `true`, the plugin will output additional information about the image generation process. Default: `false`
+
+* `skip_drafts` – If set to `true`, the plugin will skip post drafts when generating images. Default: `true`
+
+* `canvas` – The canvas configuration options:
+  * `background_color` – The background color of the canvas. Default: `#FFFFFF`
+  * `background_image` – The background image of the canvas. Default: `nil`
+
+* `header` – The header configuration options:
+  * `font_family` – The font family of the header text. Default: `Helvetica, Bold`
+  * `color` – The color of the header text. Default: `#2f313d`
+
+* `content` – The content configuration options:
+  * `font_family` – The font family of the content text. Default: `Helvetica, Regular`
+  * `color` – The color of the content text. Default: `#535358`
+
+* `border_bottom` – The border bottom configuration options:
+  * `width` – The width of the border bottom. Default: `20`
+  * `fill` – The array of colors to fill the border bottom. Default: `["#000000"]`
+
+* `domain` – The domain name to use in the image. Default: `nil`
+
+* `image` – Path to the image to use as the logo. Default: `nil`
+
 ## Examples
 
 Configuration can be defined on the site level or on the post level.
