@@ -9,6 +9,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
     FileUtils.mkdir_p File.join(site.config["source"], base_path)
 
     site.posts.docs.each do |post|
+      next if post.draft? && JekyllOgImage.config.skip_drafts?
+
       path = File.join(site.config["source"], base_path, "#{post.data['slug']}.png")
 
       if !File.exist?(path) || JekyllOgImage.config.force?

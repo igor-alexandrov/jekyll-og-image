@@ -54,11 +54,15 @@ class JekyllOgImage::Configuration
   end
 
   def force?
-    @raw_config["force"] || false
+    @raw_config["force"].nil? ? false : @raw_config["force"]
   end
 
   def verbose?
-    @raw_config["verbose"] || false
+    @raw_config["verbose"].nil? ? false : @raw_config["verbose"]
+  end
+
+  def skip_drafts?
+    @raw_config["skip_drafts"].nil? ? true : @raw_config["skip_drafts"]
   end
 
   def canvas

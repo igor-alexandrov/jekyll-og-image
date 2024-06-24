@@ -70,6 +70,22 @@ RSpec.describe JekyllOgImage::Configuration do
     end
   end
 
+  describe '#skip_drafts?' do
+    context 'when skip_drafts is not set' do
+      it 'returns true' do
+        expect(subject.skip_drafts?).to be(true)
+      end
+    end
+
+    context 'when skip_drafts is set' do
+      let(:raw_config) { { "skip_drafts" => false } }
+
+      it 'returns false' do
+        expect(subject.skip_drafts?).to be(false)
+      end
+    end
+  end
+
   describe '#canvas' do
     context 'when canvas is not set' do
       it 'returns a Canvas object with default values' do
