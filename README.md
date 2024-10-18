@@ -11,7 +11,7 @@ A Jekyll plugin to automatically generate open graph images for posts.
 Add this line to your site's Gemfile:
 
 ```ruby
-  gem 'jekyll-feed'
+  gem 'jekyll-og-image'
 ```
 
 And then add this line to your site's `_config.yml`:
