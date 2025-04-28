@@ -1,0 +1,7 @@
+collections:
+  my_collection:
+    output: true
+
+# Basic config needed for Jekyll to run
+url: "http://localhost:4000"
+baseurl: "" 
