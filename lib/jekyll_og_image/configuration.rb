@@ -49,8 +49,8 @@ class JekyllOgImage::Configuration
     to_h == other.to_h
   end
 
-  def content_types
-    @raw_config["content_types"] || ["posts"]
+  def collections
+    @raw_config["collections"] || [ "posts" ]
   end
 
   def output_dir

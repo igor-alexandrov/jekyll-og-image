@@ -6,56 +6,58 @@ class JekyllOgImage::Generator < Jekyll::Generator
   def generate(site)
     config = JekyllOgImage.config
 
-    config.content_types.each do |type|
-      process_content_type(site, type, config)
+    config.collections.each do |type|
+      process_collection(site, type, config)
     end
   end
 
   private
 
-  def process_content_type(site, type, config)
+  def process_collection(site, type, config)
     Jekyll.logger.info "Jekyll Og Image:", "Processing type: #{type}" if config.verbose?
 
-    documents = get_documents_for_type(site, type)
-    return if documents.empty?
+    items = get_items_for_collection(site, type)
+    return if items.empty?
 
     base_output_dir = File.join(config.output_dir, type)
     absolute_output_dir = File.join(site.config["source"], base_output_dir)
     FileUtils.mkdir_p absolute_output_dir
 
-    documents.each do |doc|
-      if doc.respond_to?(:draft?) && doc.draft? && config.skip_drafts?
-        Jekyll.logger.info "Jekyll Og Image:", "Skipping draft: #{doc.data['title']}" if config.verbose?
+    items.each do |item|
+      if item.respond_to?(:draft?) && item.draft? && config.skip_drafts?
+        Jekyll.logger.info "Jekyll Og Image:", "Skipping draft: #{item.data['title']}" if config.verbose?
         next
       end
 
-      fallback_basename = if doc.respond_to?(:basename_without_ext)
-                          doc.basename_without_ext
-                        else
-                          File.basename(doc.name, File.extname(doc.name))
-                        end
-      slug = doc.data['slug'] || Jekyll::Utils.slugify(doc.data['title'] || fallback_basename)
+      fallback_basename = if item.respond_to?(:basename_without_ext)
+                            item.basename_without_ext
+                            # rubocop:disable Layout/ElseAlignment # Disabled due to RuboCop error in v3.3.0
+                          else
+                            # rubocop:enable Layout/ElseAlignment
+                            File.basename(item.name, File.extname(item.name))
+      end
+      slug = item.data["slug"] || Jekyll::Utils.slugify(item.data["title"] || fallback_basename)
       image_filename = "#{slug}.png"
       absolute_image_path = File.join(absolute_output_dir, image_filename)
       relative_image_path = File.join("/", base_output_dir, image_filename) # Use leading slash for URL
 
       if !File.exist?(absolute_image_path) || config.force?
         Jekyll.logger.info "Jekyll Og Image:", "Generating image #{absolute_image_path}" if config.verbose?
-        generate_image_for_document(site, doc, absolute_image_path, config)
+        generate_image_for_document(site, item, absolute_image_path, config)
       else
         Jekyll.logger.info "Jekyll Og Image:", "Skipping image generation for #{relative_image_path} as it already exists." if config.verbose?
       end
 
-      doc.data["image"] ||= {
+      item.data["image"] ||= {
         "path" => relative_image_path,
         "width" => 1200,
         "height" => 600,
-        "alt" => doc.data["title"] 
+        "alt" => item.data["title"]
       }
     end
   end
 
-  def get_documents_for_type(site, type)
+  def get_items_for_collection(site, type)
     case type
     when "posts"
       site.posts.docs
@@ -65,29 +67,29 @@ class JekyllOgImage::Generator < Jekyll::Generator
       if site.collections.key?(type)
         site.collections[type].docs
       else
-        Jekyll.logger.warn "Jekyll Og Image:", "Unknown content type '#{type}' configured. Skipping."
+        Jekyll.logger.warn "Jekyll Og Image:", "Unknown collection type \"#{type}\" configured. Skipping."
         []
       end
     end
   end
 
-  def generate_image_for_document(site, doc, path, base_config)
-    config = base_config.merge!(doc.data["og_image"] || {})
+  def generate_image_for_document(site, item, path, base_config)
+    config = base_config.merge!(item.data["og_image"] || {})
 
     canvas = generate_canvas(site, config)
     canvas = add_border_bottom(canvas, config) if config.border_bottom
     canvas = add_image(canvas, File.read(File.join(site.config["source"], config.image))) if config.image
-    canvas = add_header(canvas, doc, config)
-    canvas = add_publish_date(canvas, doc, config)
-    canvas = add_tags(canvas, doc, config) if doc.data["tags"]&.any? 
-    canvas = add_domain(canvas, doc, config) if config.domain
+    canvas = add_header(canvas, item, config)
+    canvas = add_publish_date(canvas, item, config)
+    canvas = add_tags(canvas, item, config) if item.data["tags"]&.any?
+    canvas = add_domain(canvas, item, config) if config.domain
 
     canvas.save(path)
   end
 
   def generate_canvas(site, config)
     background_image = if config.canvas.background_image
-      bg_path = File.join(site.config["source"], config.canvas.background_image.gsub(/^\//, ''))
+      bg_path = File.join(site.config["source"], config.canvas.background_image.gsub(/^\//, ""))
       File.exist?(bg_path) ? File.read(bg_path) : nil
     end
 
@@ -113,8 +115,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
     ) { |_canvas, _text| { x: 80, y: 100 } }
   end
 
-  def add_header(canvas, doc, config)
-    title = doc.data["title"] || "Untitled"
+  def add_header(canvas, item, config)
+    title = item.data["title"] || "Untitled"
     canvas.text(title,
       width: config.image ? 870 : 1040,
       color: config.header.color,
@@ -123,11 +125,11 @@ class JekyllOgImage::Generator < Jekyll::Generator
     ) { |_canvas, _text| { x: 80, y: 100 } }
   end
 
-  def add_publish_date(canvas, doc, config)
-    return canvas unless doc.respond_to?(:date) && doc.date
+  def add_publish_date(canvas, item, config)
+    return canvas unless item.respond_to?(:date) && item.date
 
-    date = doc.date.strftime("%B %d, %Y")
-    y_pos = (doc.data["tags"]&.any? ? config.margin_bottom + 50 : config.margin_bottom)
+    date = item.date.strftime("%B %d, %Y")
+    y_pos = (item.data["tags"]&.any? ? config.margin_bottom + 50 : config.margin_bottom)
 
     canvas.text(date,
       gravity: :sw,
@@ -137,8 +139,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
     ) { |_canvas, _text| { x: 80, y: y_pos } }
   end
 
-  def add_tags(canvas, doc, config)
-    tags_list = doc.data["tags"]
+  def add_tags(canvas, item, config)
+    tags_list = item.data["tags"]
     return canvas unless tags_list.is_a?(Array) && tags_list.any?
 
     tags = tags_list.map { |tag| "##{tag}" }.join(" ")
@@ -151,12 +153,15 @@ class JekyllOgImage::Generator < Jekyll::Generator
     ) { |_canvas, _text| { x: 80, y: config.margin_bottom } }
   end
 
-  def add_domain(canvas, doc, config)
-    y_pos = if doc.data["tags"]&.any?
+  def add_domain(canvas, item, config)
+    y_pos = if item.data["tags"]&.any?
               config.margin_bottom + 50
+              # rubocop:disable Layout/ElseAlignment # Disabled due to RuboCop error in v3.3.0
             else
+              # rubocop:enable Layout/ElseAlignment
               config.margin_bottom
-            end
+    end
+
     canvas.text(config.domain,
       gravity: :se,
       color: config.content.color,

@@ -32,9 +32,9 @@ The plugin can be configured in the `_config.yml` file or in the post's front ma
 
 The following configuration options are available:
 
-* `content_types` - An array specifying which types of content to generate images for. Supports `"posts"`, `"pages"`, and the names of any custom collections. Default: `["posts"]`
+* `collections` - An array specifying which types of collections to generate images for. Supports `"posts"`, `"pages"`, and the names of any custom collections. Default: `["posts"]`
 
-* `output_dir` – The directory where the generated images will be saved. Images will be placed in subdirectories named after their content type (e.g., `assets/images/og/posts`, `assets/images/og/pages`). Default: `assets/images/og`
+* `output_dir` – The directory where the generated images will be saved. Images will be placed in subdirectories named after their collection type (e.g., `assets/images/og/posts`, `assets/images/og/pages`). Default: `assets/images/og`
 
 * `force` – If set to `true`, the plugin will generate an image for every document, even if the document already has an image. Default: `false`
 * `verbose`  – If set to `true`, the plugin will output additional information about the image generation process. Default: `false`
@@ -72,7 +72,7 @@ For a side wide level configuration, edit your `_config.yml`, for a post level c
 ```yaml
 # _config.yml
 og_image:
-  content_types: ["posts", "pages"]
+  collections: ["posts", "pages"]
   output_dir: "assets/images/og"
   domain: "igor.works"
   border_bottom:

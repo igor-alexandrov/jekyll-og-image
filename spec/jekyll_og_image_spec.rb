@@ -36,13 +36,13 @@ RSpec.describe JekyllOgImage do
     expect(Pathname.new(source_dir('assets', 'images', 'og', 'posts', 'what-is-jekyll.png'))).not_to exist
   end
 
-  # --- Tests for content_types feature ---
-  describe "when handling content_types" do
+  # --- Tests for collections feature ---
+  describe "when handling collections" do
     let(:post_image_path) { Pathname.new(source_dir('assets', 'images', 'og', 'posts', 'a-week-with-the-apple-watch.png')) }
     let(:page_image_path) { Pathname.new(source_dir('assets', 'images', 'og', 'pages', 'about-us.png')) }
     let(:collection_image_path) { Pathname.new(source_dir('assets', 'images', 'og', 'my_collection', 'item1.png')) }
 
-    context "with default configuration (no content_types specified)" do
+    context "with default configuration (no collections specified)" do
       let(:site) { Jekyll::Site.new(config) }
       let(:og_image) { JekyllOgImage::Generator.new(site.config) }
 
@@ -59,10 +59,10 @@ RSpec.describe JekyllOgImage do
       end
     end
 
-    context "when content_types specifies ['pages']" do
+    context "when collections specifies ['pages']" do
       let(:config_with_pages) do
         Jekyll.configuration(Jekyll::Utils.deep_merge_hashes(config, {
-          "og_image" => { "content_types" => ["pages"] }
+          "og_image" => { "collections" => [ "pages" ] }
         }))
       end
       let(:site) { Jekyll::Site.new(config_with_pages) }
@@ -81,10 +81,10 @@ RSpec.describe JekyllOgImage do
       end
     end
 
-    context "when content_types specifies ['my_collection']" do
+    context "when collections specifies ['my_collection']" do
       let(:config_with_collection) do
         Jekyll.configuration(Jekyll::Utils.deep_merge_hashes(config, {
-          "og_image" => { "content_types" => ["my_collection"] }
+          "og_image" => { "collections" => [ "my_collection" ] }
         }))
       end
       let(:site) { Jekyll::Site.new(config_with_collection) }
@@ -107,10 +107,10 @@ RSpec.describe JekyllOgImage do
       end
     end
 
-    context "when content_types specifies ['posts', 'pages']" do
+    context "when collections specifies ['posts', 'pages']" do
       let(:config_with_multiple) do
         Jekyll.configuration(Jekyll::Utils.deep_merge_hashes(config, {
-          "og_image" => { "content_types" => ["posts", "pages"] }
+          "og_image" => { "collections" => [ "posts", "pages" ] }
         }))
       end
       let(:site) { Jekyll::Site.new(config_with_multiple) }
@@ -128,7 +128,7 @@ RSpec.describe JekyllOgImage do
     context "with front matter overrides on a page" do
       let(:config_with_pages) do
         Jekyll.configuration(Jekyll::Utils.deep_merge_hashes(config, {
-          "og_image" => { "content_types" => ["pages"] }
+          "og_image" => { "collections" => [ "pages" ] }
         }))
       end
       let(:site) { Jekyll::Site.new(config_with_pages) }
