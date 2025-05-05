@@ -49,6 +49,10 @@ class JekyllOgImage::Configuration
     to_h == other.to_h
   end
 
+  def collections
+    @raw_config["collections"] || [ "posts" ]
+  end
+
   def output_dir
     @raw_config["output_dir"] || "assets/images/og"
   end
