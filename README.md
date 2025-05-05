@@ -44,6 +44,8 @@ The following configuration options are available:
 * `canvas` – The canvas configuration options:
   * `background_color` – The background color of the canvas. Default: `#FFFFFF`
   * `background_image` – The background image of the canvas. Default: `nil`
+  * `width` – The width of the generated image in pixels. Default: `1200`
+  * `height` – The height of the generated image in pixels. Default: `600`
 
 * `header` – The header configuration options:
   * `font_family` – The font family of the header text. Default: `Helvetica, Bold`

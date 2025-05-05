@@ -3,8 +3,8 @@
 # require "anyway_config"
 
 class JekyllOgImage::Configuration
-  Canvas = Data.define(:background_color, :background_image) do
-    def initialize(background_color: "#FFFFFF", background_image: nil)
+  Canvas = Data.define(:background_color, :background_image, :width, :height) do
+    def initialize(background_color: "#FFFFFF", background_image: nil, width: 1200, height: 600)
       super
     end
   end
