@@ -92,14 +92,39 @@ RSpec.describe JekyllOgImage::Configuration do
         expect(subject.canvas).to eq(JekyllOgImage::Configuration::Canvas.new)
         expect(subject.canvas.background_color).to eq("#FFFFFF")
         expect(subject.canvas.background_image).to be_nil
+        expect(subject.canvas.width).to eq(1200)
+        expect(subject.canvas.height).to eq(600)
       end
     end
 
     context 'when canvas is set' do
-      let(:raw_config) { { "canvas" => { "background_color" => "#000000", "background_image" => "foo.png" } } }
+      let(:raw_config) { { "canvas" => { "background_color" => "#000000", "background_image" => "foo.png", "width" => 800, "height" => 400 } } }
 
       it 'returns a Canvas object with the given values' do
-        expect(subject.canvas).to eq(JekyllOgImage::Configuration::Canvas.new(background_color: "#000000", background_image: "foo.png"))
+        expect(subject.canvas).to eq(JekyllOgImage::Configuration::Canvas.new(
+          background_color: "#000000",
+          background_image: "foo.png",
+          width: 800,
+          height: 400
+        ))
+      end
+    end
+
+    context 'when only width is set' do
+      let(:raw_config) { { "canvas" => { "width" => 800 } } }
+
+      it 'returns a Canvas object with the custom width and default height' do
+        expect(subject.canvas.width).to eq(800)
+        expect(subject.canvas.height).to eq(600)
+      end
+    end
+
+    context 'when only height is set' do
+      let(:raw_config) { { "canvas" => { "height" => 400 } } }
+
+      it 'returns a Canvas object with the custom height and default width' do
+        expect(subject.canvas.width).to eq(1200)
+        expect(subject.canvas.height).to eq(400)
       end
     end
   end

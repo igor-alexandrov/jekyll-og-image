@@ -50,8 +50,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
 
       item.data["image"] ||= {
         "path" => relative_image_path,
-        "width" => 1200,
-        "height" => 600,
+        "width" => JekyllOgImage.config.canvas.width,
+        "height" => JekyllOgImage.config.canvas.height,
         "alt" => item.data["title"]
       }
     end
@@ -93,7 +93,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
       File.exist?(bg_path) ? File.read(bg_path) : nil
     end
 
-    JekyllOgImage::Element::Canvas.new(1200, 600,
+    JekyllOgImage::Element::Canvas.new(JekyllOgImage.config.canvas.width, JekyllOgImage.config.canvas.height,
       background_color: config.canvas.background_color,
       background_image: background_image
     )
