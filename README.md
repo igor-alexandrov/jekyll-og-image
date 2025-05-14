@@ -22,6 +22,59 @@ plugins:
   - jekyll-og-image
 ```
 
+This plugin requires `libvips` to be installed. If you are using GitHub Pages to host your Jekyll site, don't forget to install `libvips` before running `jekyll build`. See the example below.
+
+``` yaml
+jobs:
+  build:
+    needs:
+      - lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Set Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+
+      - name: Run install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      - name: Update apt
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: sudo apt-get update -qq
+
+      - name: Install libvips
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: sudo apt-get install --fix-missing libvips
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build with Jekyll
+        run: ./bin/jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
+        env:
+          JEKYLL_ENV: production
+
+      - name: Upload artifact
+        # Automatically uploads an artifact from the './_site' directory by default
+        uses: actions/upload-pages-artifact@v3
+
+```
+
 ## Usage
 
 Jekyll OG Image works together with [jekyll-seo-tag](https://github.com/jekyll/jekyll-seo-tag) plugin. It automatically generates open graph images for posts and inserts them into the posts metadata.
