@@ -8,3 +8,6 @@ AllCops:
 Style/FrozenStringLiteralComment:
   Enabled: true
   EnforcedStyle: always
+
+Rails/RefuteMethods:
+  Enabled: false

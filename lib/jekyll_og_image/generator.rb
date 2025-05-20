@@ -36,6 +36,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
                             # rubocop:enable Layout/ElseAlignment
                             File.basename(item.name, File.extname(item.name))
       end
+
       slug = item.data["slug"] || Jekyll::Utils.slugify(item.data["title"] || fallback_basename)
       image_filename = "#{slug}.png"
       absolute_image_path = File.join(absolute_output_dir, image_filename)
@@ -75,6 +76,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
 
   def generate_image_for_document(site, item, path, base_config)
     config = base_config.merge!(item.data["og_image"] || {})
+
+    return unless config.enabled?
 
     canvas = generate_canvas(site, config)
     canvas = add_border_bottom(canvas, config) if config.border_bottom

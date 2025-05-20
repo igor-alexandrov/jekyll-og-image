@@ -53,6 +53,10 @@ class JekyllOgImage::Configuration
     @raw_config["collections"] || [ "posts" ]
   end
 
+  def enabled?
+    @raw_config["enabled"].nil? ? true : @raw_config["enabled"]
+  end
+
   def output_dir
     @raw_config["output_dir"] || "assets/images/og"
   end
