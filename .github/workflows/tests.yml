@@ -41,4 +41,4 @@ jobs:
         sudo apt-get install --fix-missing libvips
 
     - name: Minitest
-      run: bundle rake test
+      run: bundle exec rake test
