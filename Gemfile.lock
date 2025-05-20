@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    jekyll-og-image (1.6.0)
+    jekyll-og-image (2.0.0)
       jekyll (>= 3.4, < 5.0)
       jekyll-seo-tag (~> 2.8)
       ruby-vips (~> 2.2.0)
@@ -153,6 +153,7 @@ DEPENDENCIES
   csv
   jekyll-og-image!
   rake (~> 13.0)
+  rubocop
   rubocop-rails-omakase
 
 BUNDLED WITH

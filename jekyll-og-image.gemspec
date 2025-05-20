@@ -33,4 +33,5 @@ Gem::Specification.new do |spec|
 
   # Add csv as development dependency to fix load errors in tests with Ruby 3.4+
   spec.add_development_dependency "csv"
+  spec.add_development_dependency "rubocop"
 end
