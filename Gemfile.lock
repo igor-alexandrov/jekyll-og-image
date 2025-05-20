@@ -152,8 +152,9 @@ PLATFORMS
 DEPENDENCIES
   csv
   jekyll-og-image!
+  minitest (~> 5.16)
   rake (~> 13.0)
-  rubocop
+  rubocop (~> 1.21)
   rubocop-rails-omakase
 
 BUNDLED WITH
