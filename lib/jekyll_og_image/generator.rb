@@ -224,20 +224,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
   end
 
 
-  def add_domain(canvas, item, config)
-    # Check if any metadata is being displayed
-    has_metadata = config.metadata.fields.any? do |field|
-      case field
-      when "date"
-        item.respond_to?(:date) && item.date
-      when "tags"
-        item.data["tags"]&.is_a?(Array) && item.data["tags"].any?
-      else
-        item.data[field]
-      end
-    end
-
-    y_pos = has_metadata ? config.margin_bottom + 50 : config.margin_bottom
+  def add_domain(canvas, _item, config)
+    y_pos = config.margin_bottom
 
     canvas.text(config.domain,
       gravity: :se,

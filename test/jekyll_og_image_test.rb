@@ -182,4 +182,33 @@ class JekyllOgImageTest < Minitest::Test
 
     refute_includes metadata_text, "This is a very long description"
   end
+
+  def test_domain_y_position_aligns_with_metadata_line
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => {
+        "collections" => [ "posts" ],
+        "domain" => "example.com",
+        "metadata" => { "fields" => [ "date" ] }
+      },
+    )
+
+    read
+    post = @site.posts.docs.first
+    config = JekyllOgImage::Configuration.new(@config["og_image"])
+
+    canvas = Class.new do
+      attr_reader :y_position
+
+      def text(_message, **_opts)
+        result = yield(nil, nil)
+        @y_position = result[:y]
+        self
+      end
+    end.new
+
+    @og_image.send(:add_domain, canvas, post, config)
+
+    assert_equal config.margin_bottom, canvas.y_position
+  end
 end
