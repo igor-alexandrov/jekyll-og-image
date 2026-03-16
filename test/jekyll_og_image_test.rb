@@ -127,4 +127,18 @@ class JekyllOgImageTest < Minitest::Test
     refute File.exist?(page_image_path)
     refute File.exist?(collection_image_path)
   end
+
+  def test_does_not_register_duplicate_static_files_for_existing_images
+    FileUtils.mkdir_p(File.dirname(published_post_1_image_path))
+    File.binwrite(published_post_1_image_path, "stub")
+
+    read
+    generate_images
+
+    matching_files = @site.static_files.select do |file|
+      file.relative_path == "/assets/images/og/posts/a-week-with-the-apple-watch.png"
+    end
+
+    assert_equal 1, matching_files.size
+  end
 end

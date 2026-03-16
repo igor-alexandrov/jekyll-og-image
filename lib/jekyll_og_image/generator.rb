@@ -49,17 +49,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
         Jekyll.logger.info "Jekyll Og Image:", "Skipping image generation for #{relative_image_path} as it already exists." if config.verbose?
       end
 
-      # Add the generated image to Jekyll's static files collection
-      if File.exist?(absolute_image_path)
-        static_file = Jekyll::StaticFile.new(
-          site,
-          site.source,
-          base_output_dir,
-          image_filename
-        )
-        site.static_files << static_file unless site.static_files.include?(static_file)
-        Jekyll.logger.info "Jekyll Og Image:", "Added #{base_output_dir}/#{image_filename} to static files" if config.verbose?
-      end
+      register_static_file(site, base_output_dir, image_filename, config) if File.exist?(absolute_image_path)
 
       item.data["image"] ||= {
         "path" => relative_image_path,
@@ -84,6 +74,21 @@ class JekyllOgImage::Generator < Jekyll::Generator
         []
       end
     end
+  end
+
+  def register_static_file(site, base_output_dir, image_filename, config)
+    relative_path = File.join("/", base_output_dir, image_filename)
+    return if site.static_files.any? { |file| file.relative_path == relative_path }
+
+    static_file = Jekyll::StaticFile.new(
+      site,
+      site.source,
+      base_output_dir,
+      image_filename
+    )
+
+    site.static_files << static_file
+    Jekyll.logger.info "Jekyll Og Image:", "Added #{base_output_dir}/#{image_filename} to static files" if config.verbose?
   end
 
   def generate_image_for_document(site, item, path, base_config)
