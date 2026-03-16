@@ -127,4 +127,88 @@ class JekyllOgImageTest < Minitest::Test
     refute File.exist?(page_image_path)
     refute File.exist?(collection_image_path)
   end
+
+  def test_does_not_register_duplicate_static_files_for_existing_images
+    FileUtils.mkdir_p(File.dirname(published_post_1_image_path))
+    File.binwrite(published_post_1_image_path, "stub")
+
+    read
+    generate_images
+
+    matching_files = @site.static_files.select do |file|
+      file.relative_path == "/assets/images/og/posts/a-week-with-the-apple-watch.png"
+    end
+
+    assert_equal 1, matching_files.size
+  end
+
+  def test_metadata_includes_short_description_when_it_fits
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => {
+        "collections" => [ "posts" ],
+        "metadata" => { "fields" => [ "date", "description" ] },
+        "domain" => "example.com"
+      },
+    )
+
+    read
+    post = @site.posts.docs.first
+    post.data["description"] = "Short description"
+    config = JekyllOgImage::Configuration.new(@config["og_image"])
+
+    metadata_text = @og_image.send(:metadata_text_for, post, config)
+
+    assert_includes metadata_text, "Short description"
+  end
+
+  def test_metadata_skips_description_when_it_does_not_fit
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => {
+        "collections" => [ "posts" ],
+        "metadata" => { "fields" => [ "date", "description" ] },
+        "domain" => "example.com"
+      },
+    )
+
+    read
+    post = @site.posts.docs.first
+    post.data["description"] = "This is a very long description intended to exceed the single-line metadata width " \
+      "and therefore should not be included in the generated metadata footer text."
+    config = JekyllOgImage::Configuration.new(@config["og_image"])
+
+    metadata_text = @og_image.send(:metadata_text_for, post, config)
+
+    refute_includes metadata_text, "This is a very long description"
+  end
+
+  def test_domain_y_position_aligns_with_metadata_line
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => {
+        "collections" => [ "posts" ],
+        "domain" => "example.com",
+        "metadata" => { "fields" => [ "date" ] }
+      },
+    )
+
+    read
+    post = @site.posts.docs.first
+    config = JekyllOgImage::Configuration.new(@config["og_image"])
+
+    canvas = Class.new do
+      attr_reader :y_position
+
+      def text(_message, **_opts)
+        result = yield(nil, nil)
+        @y_position = result[:y]
+        self
+      end
+    end.new
+
+    @og_image.send(:add_domain, canvas, post, config)
+
+    assert_equal config.margin_bottom, canvas.y_position
+  end
 end

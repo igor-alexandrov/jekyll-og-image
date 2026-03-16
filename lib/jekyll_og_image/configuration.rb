@@ -9,8 +9,8 @@ class JekyllOgImage::Configuration
     end
   end
 
-  Header = Data.define(:font_family, :color) do
-    def initialize(font_family: "Helvetica, Bold", color: "#2f313d")
+  Header = Data.define(:font_family, :color, :prefix, :suffix) do
+    def initialize(font_family: "Helvetica, Bold", color: "#2f313d", prefix: "", suffix: "")
       super
     end
   end
@@ -25,6 +25,18 @@ class JekyllOgImage::Configuration
     def initialize(width: 0, fill: nil)
       fill.is_a?(Array) ? fill : [ fill ]
       super(width: width, fill: fill)
+    end
+  end
+
+  Image = Data.define(:path, :width, :height, :radius, :position, :gravity) do
+    def initialize(path: nil, width: 150, height: 150, radius: 50, position: { x: 80, y: 100 }, gravity: :ne)
+      super
+    end
+  end
+
+  Metadata = Data.define(:fields, :separator, :date_format) do
+    def initialize(fields: [ "date", "tags" ], separator: " • ", date_format: "%B %d, %Y")
+      super
     end
   end
 
@@ -86,7 +98,14 @@ class JekyllOgImage::Configuration
   end
 
   def image
-    @raw_config["image"]
+    if @raw_config["image"].is_a?(String)
+      # Legacy support: if image is just a string, convert it to the new format
+      Image.new(path: @raw_config["image"])
+    elsif @raw_config["image"]
+      Image.new(**Jekyll::Utils.symbolize_hash_keys(@raw_config["image"]))
+    else
+      Image.new
+    end
   end
 
   def domain
@@ -99,5 +118,10 @@ class JekyllOgImage::Configuration
 
   def margin_bottom
     80 + (border_bottom&.width || 0)
+  end
+
+
+  def metadata
+    @raw_config["metadata"] ? Metadata.new(**Jekyll::Utils.symbolize_hash_keys(@raw_config["metadata"])) : Metadata.new
   end
 end

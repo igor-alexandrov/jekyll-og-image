@@ -159,12 +159,29 @@ class JekyllOgImage::ConfigurationTest < Minitest::Test
   end
 
   def test_default_image
-    assert_nil @default_config.image
+    assert_nil @default_config.image.path
   end
 
-  def test_custom_image
+  def test_custom_image_legacy
     config = JekyllOgImage::Configuration.new({ "image" => "foo.png" })
-    assert_equal "foo.png", config.image
+    assert_equal "foo.png", config.image.path
+    assert_equal 150, config.image.width
+    assert_equal 150, config.image.height
+  end
+
+  def test_custom_image_new_format
+    config = JekyllOgImage::Configuration.new({
+      "image" => {
+        "path" => "bar.png",
+        "width" => 200,
+        "height" => 200,
+        "radius" => 25
+      }
+    })
+    assert_equal "bar.png", config.image.path
+    assert_equal 200, config.image.width
+    assert_equal 200, config.image.height
+    assert_equal 25, config.image.radius
   end
 
   def test_default_domain

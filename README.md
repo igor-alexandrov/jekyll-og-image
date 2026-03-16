@@ -103,6 +103,8 @@ The following configuration options are available:
 * `header` – The header configuration options:
   * `font_family` – The font family of the header text. Default: `Helvetica, Bold`
   * `color` – The color of the header text. Default: `#2f313d`
+  * `prefix` – Text to prepend to the title. Default: `""`
+  * `suffix` – Text to append to the title. Default: `""`
 
 * `content` – The content configuration options:
   * `font_family` – The font family of the content text. Default: `Helvetica, Regular`
@@ -114,7 +116,18 @@ The following configuration options are available:
 
 * `domain` – The domain name to use in the image. Default: `nil`
 
-* `image` – Path to the image to use as the logo. Default: `nil`
+* `image` – Logo/image configuration options. Can be a string (legacy format) or an object with the following options:
+  * `path` – Path to the image file. **Note: Use JPEG format for best compatibility. PNG images with transparency may not render correctly.** Default: `nil`
+  * `width` – The width of the logo in pixels. Default: `150`
+  * `height` – The height of the logo in pixels. Default: `150`
+  * `radius` – The radius for rounded corners on the logo. Default: `50`
+  * `position` – The position of the logo as `{x, y}` coordinates. Default: `{x: 80, y: 100}`
+  * `gravity` – The gravity anchor for logo positioning (nw, n, ne, w, e, sw, s, se). Default: `ne`
+
+* `metadata` – The metadata configuration options:
+  * `fields` – Array of metadata fields to display. Available options: `"date"`, `"tags"`, or any custom front matter field. Default: `["date", "tags"]`
+  * `separator` – Text to separate multiple metadata fields. Default: `" • "`
+  * `date_format` – Date format string for the date field. Default: `"%B %d, %Y"`
 
 ## Examples
 
@@ -215,6 +228,36 @@ og_image:
 ```
 
 ![Example 4](examples/4.png)
+
+### Custom Metadata and Logo Size
+
+```yaml
+# _config.yml
+og_image:
+  domain: "igor.works"
+  image:
+    path: "/assets/images/logo.png"
+    width: 100
+    height: 100
+    radius: 20
+    position:
+      x: 60
+      y: 60
+  header:
+    prefix: "📖 "
+    suffix: " - My Blog"
+  metadata:
+    fields: ["author", "date", "reading_time"]
+    separator: " | "
+    date_format: "%d %B %Y"
+```
+
+This configuration:
+- Adjusts the logo size to 100x100px with less rounded corners
+- Adds a book emoji prefix and " - My Blog" suffix to titles
+- Shows author, date, and reading_time in the metadata section
+- Uses a pipe separator between metadata fields
+- Formats dates as "15 February 2024"
 
 
 ## Contributing

@@ -49,6 +49,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
         Jekyll.logger.info "Jekyll Og Image:", "Skipping image generation for #{relative_image_path} as it already exists." if config.verbose?
       end
 
+      register_static_file(site, base_output_dir, image_filename, config) if File.exist?(absolute_image_path)
+
       item.data["image"] ||= {
         "path" => relative_image_path,
         "width" => JekyllOgImage.config.canvas.width,
@@ -74,6 +76,21 @@ class JekyllOgImage::Generator < Jekyll::Generator
     end
   end
 
+  def register_static_file(site, base_output_dir, image_filename, config)
+    relative_path = File.join("/", base_output_dir, image_filename)
+    return if site.static_files.any? { |file| file.relative_path == relative_path }
+
+    static_file = Jekyll::StaticFile.new(
+      site,
+      site.source,
+      base_output_dir,
+      image_filename
+    )
+
+    site.static_files << static_file
+    Jekyll.logger.info "Jekyll Og Image:", "Added #{base_output_dir}/#{image_filename} to static files" if config.verbose?
+  end
+
   def generate_image_for_document(site, item, path, base_config)
     config = base_config.merge!(item.data["og_image"] || {})
 
@@ -81,10 +98,9 @@ class JekyllOgImage::Generator < Jekyll::Generator
 
     canvas = generate_canvas(site, config)
     canvas = add_border_bottom(canvas, config) if config.border_bottom
-    canvas = add_image(canvas, File.read(File.join(site.config["source"], config.image))) if config.image
+    canvas = add_image(canvas, File.read(File.join(site.config["source"], config.image.path)), config) if config.image.path
     canvas = add_header(canvas, item, config)
-    canvas = add_publish_date(canvas, item, config)
-    canvas = add_tags(canvas, item, config) if item.data["tags"]&.any?
+    canvas = add_metadata(canvas, item, config)
     canvas = add_domain(canvas, item, config) if config.domain
 
     canvas.save(path)
@@ -109,61 +125,107 @@ class JekyllOgImage::Generator < Jekyll::Generator
     )
   end
 
-  def add_image(canvas, image)
-    canvas.image(image,
-      gravity: :ne,
-      width: 150,
-      height: 150,
-      radius: 50
-    ) { |_canvas, _text| { x: 80, y: 100 } }
+  def add_image(canvas, image_data, config)
+    image_config = config.image
+    canvas.image(image_data,
+      gravity: image_config.gravity,
+      width: image_config.width,
+      height: image_config.height,
+      radius: image_config.radius
+    ) { |_canvas, _text| { x: image_config.position[:x], y: image_config.position[:y] } }
   end
 
   def add_header(canvas, item, config)
     title = item.data["title"] || "Untitled"
-    canvas.text(title,
-      width: config.image ? 870 : 1040,
+    full_title = "#{config.header.prefix}#{title}#{config.header.suffix}"
+
+    # Calculate available width for header text to avoid overlap with image
+    header_width = if config.image.path
+      # Canvas width - left margin - right margin - image width - spacing
+      # 1200 - 80 - 80 - image_width - 30 (spacing)
+      1040 - config.image.width - 30
+    else
+      1040
+    end
+
+    canvas.text(full_title,
+      width: header_width,
       color: config.header.color,
       dpi: 400,
       font: config.header.font_family
     ) { |_canvas, _text| { x: 80, y: 100 } }
   end
 
-  def add_publish_date(canvas, item, config)
-    return canvas unless item.respond_to?(:date) && item.date
+  def add_metadata(canvas, item, config)
+    metadata_text = metadata_text_for(item, config)
+    return canvas if metadata_text.empty?
 
-    date = item.date.strftime("%B %d, %Y")
-    y_pos = (item.data["tags"]&.any? ? config.margin_bottom + 50 : config.margin_bottom)
+    metadata_width = metadata_width_for(config)
 
-    canvas.text(date,
+    canvas.text(metadata_text,
       gravity: :sw,
-      color: config.content.color,
-      dpi: 150,
-      font: config.content.font_family
-    ) { |_canvas, _text| { x: 80, y: y_pos } }
-  end
-
-  def add_tags(canvas, item, config)
-    tags_list = item.data["tags"]
-    return canvas unless tags_list.is_a?(Array) && tags_list.any?
-
-    tags = tags_list.map { |tag| "##{tag}" }.join(" ")
-
-    canvas.text(tags,
-      gravity: :sw,
+      width: metadata_width,
       color: config.content.color,
       dpi: 150,
       font: config.content.font_family
     ) { |_canvas, _text| { x: 80, y: config.margin_bottom } }
   end
 
-  def add_domain(canvas, item, config)
-    y_pos = if item.data["tags"]&.any?
-              config.margin_bottom + 50
-              # rubocop:disable Layout/ElseAlignment # Disabled due to RuboCop error in v3.3.0
-            else
-              # rubocop:enable Layout/ElseAlignment
-              config.margin_bottom
+  def metadata_text_for(item, config)
+    metadata_parts = []
+    metadata_width = metadata_width_for(config)
+
+    config.metadata.fields.each do |field|
+      metadata_value = metadata_value_for(item, field, config)
+      next if metadata_value.nil? || metadata_value.empty?
+
+      if field == "description"
+        candidate_text = (metadata_parts + [ metadata_value ]).join(config.metadata.separator)
+        next unless metadata_text_fits_single_line?(candidate_text, metadata_width, config)
+      end
+
+      metadata_parts << metadata_value
     end
+
+    metadata_parts.join(config.metadata.separator)
+  end
+
+  def metadata_value_for(item, field, config)
+    case field
+    when "date"
+      item.respond_to?(:date) && item.date ? item.date.strftime(config.metadata.date_format) : nil
+    when "tags"
+      return nil unless item.data["tags"]&.is_a?(Array) && item.data["tags"].any?
+
+      item.data["tags"].map { |tag| "##{tag}" }.join(" ")
+    else
+      # Support custom fields from front matter
+      item.data[field]&.to_s
+    end
+  end
+
+  def metadata_width_for(config)
+    config.domain ? 600 : 1040
+  end
+
+  def metadata_text_fits_single_line?(text, metadata_width, config)
+    options = {
+      width: metadata_width,
+      dpi: 150,
+      font: config.content.font_family,
+      align: :low
+    }
+    options[:wrap] = :word if Vips.at_least_libvips?(8, 14)
+
+    single_line_height = Vips::Image.text("Ay", **options).height
+    rendered_height = Vips::Image.text(text, **options).height
+
+    rendered_height <= (single_line_height * 1.6)
+  end
+
+
+  def add_domain(canvas, _item, config)
+    y_pos = config.margin_bottom
 
     canvas.text(config.domain,
       gravity: :se,
