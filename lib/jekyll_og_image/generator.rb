@@ -157,32 +157,10 @@ class JekyllOgImage::Generator < Jekyll::Generator
   end
 
   def add_metadata(canvas, item, config)
-    metadata_parts = []
+    metadata_text = metadata_text_for(item, config)
+    return canvas if metadata_text.empty?
 
-    config.metadata.fields.each do |field|
-      case field
-      when "date"
-        if item.respond_to?(:date) && item.date
-          metadata_parts << item.date.strftime(config.metadata.date_format)
-        end
-      when "tags"
-        if item.data["tags"]&.is_a?(Array) && item.data["tags"].any?
-          metadata_parts << item.data["tags"].map { |tag| "##{tag}" }.join(" ")
-        end
-      else
-        # Support custom fields from front matter
-        if item.data[field]
-          metadata_parts << item.data[field].to_s
-        end
-      end
-    end
-
-    return canvas if metadata_parts.empty?
-
-    metadata_text = metadata_parts.join(config.metadata.separator)
-
-    # Calculate available width based on whether domain is present
-    metadata_width = config.domain ? 600 : 1040
+    metadata_width = metadata_width_for(config)
 
     canvas.text(metadata_text,
       gravity: :sw,
@@ -191,6 +169,58 @@ class JekyllOgImage::Generator < Jekyll::Generator
       dpi: 150,
       font: config.content.font_family
     ) { |_canvas, _text| { x: 80, y: config.margin_bottom } }
+  end
+
+  def metadata_text_for(item, config)
+    metadata_parts = []
+    metadata_width = metadata_width_for(config)
+
+    config.metadata.fields.each do |field|
+      metadata_value = metadata_value_for(item, field, config)
+      next if metadata_value.nil? || metadata_value.empty?
+
+      if field == "description"
+        candidate_text = (metadata_parts + [ metadata_value ]).join(config.metadata.separator)
+        next unless metadata_text_fits_single_line?(candidate_text, metadata_width, config)
+      end
+
+      metadata_parts << metadata_value
+    end
+
+    metadata_parts.join(config.metadata.separator)
+  end
+
+  def metadata_value_for(item, field, config)
+    case field
+    when "date"
+      item.respond_to?(:date) && item.date ? item.date.strftime(config.metadata.date_format) : nil
+    when "tags"
+      return nil unless item.data["tags"]&.is_a?(Array) && item.data["tags"].any?
+
+      item.data["tags"].map { |tag| "##{tag}" }.join(" ")
+    else
+      # Support custom fields from front matter
+      item.data[field]&.to_s
+    end
+  end
+
+  def metadata_width_for(config)
+    config.domain ? 600 : 1040
+  end
+
+  def metadata_text_fits_single_line?(text, metadata_width, config)
+    options = {
+      width: metadata_width,
+      dpi: 150,
+      font: config.content.font_family,
+      align: :low
+    }
+    options[:wrap] = :word if Vips.at_least_libvips?(8, 14)
+
+    single_line_height = Vips::Image.text("Ay", **options).height
+    rendered_height = Vips::Image.text(text, **options).height
+
+    rendered_height <= (single_line_height * 1.6)
   end
 
 

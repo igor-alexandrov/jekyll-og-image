@@ -141,4 +141,45 @@ class JekyllOgImageTest < Minitest::Test
 
     assert_equal 1, matching_files.size
   end
+
+  def test_metadata_includes_short_description_when_it_fits
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => {
+        "collections" => [ "posts" ],
+        "metadata" => { "fields" => [ "date", "description" ] },
+        "domain" => "example.com"
+      },
+    )
+
+    read
+    post = @site.posts.docs.first
+    post.data["description"] = "Short description"
+    config = JekyllOgImage::Configuration.new(@config["og_image"])
+
+    metadata_text = @og_image.send(:metadata_text_for, post, config)
+
+    assert_includes metadata_text, "Short description"
+  end
+
+  def test_metadata_skips_description_when_it_does_not_fit
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => {
+        "collections" => [ "posts" ],
+        "metadata" => { "fields" => [ "date", "description" ] },
+        "domain" => "example.com"
+      },
+    )
+
+    read
+    post = @site.posts.docs.first
+    post.data["description"] = "This is a very long description intended to exceed the single-line metadata width " \
+      "and therefore should not be included in the generated metadata footer text."
+    config = JekyllOgImage::Configuration.new(@config["og_image"])
+
+    metadata_text = @og_image.send(:metadata_text_for, post, config)
+
+    refute_includes metadata_text, "This is a very long description"
+  end
 end
