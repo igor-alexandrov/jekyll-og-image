@@ -13,6 +13,11 @@ class JekyllOgImage::Element::Image < JekyllOgImage::Element::Base
 
   def apply_to(canvas, &block)
     image = Vips::Image.new_from_buffer(@source, "")
+
+    if image.bands != canvas.bands
+      image = image.flatten
+    end
+
     image = round_corners(image) if @radius
 
     if @width && @height
