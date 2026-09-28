@@ -126,6 +126,82 @@ class JekyllOgImageTest < Minitest::Test
     refute File.exist?(draft_post_image_path)
     refute File.exist?(page_image_path)
     refute File.exist?(collection_image_path)
+
+    assert_nil about_page.data["image"]
+  end
+
+  def test_disabled_site_does_not_reference_missing_images
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => { "enabled" => false }
+    )
+
+    read
+    generate_images
+
+    refute File.exist?(published_post_1_image_path)
+    assert_nil find_post("a-week-with-the-apple-watch").data["image"]
+  end
+
+  def test_title_and_metadata_with_markup_characters
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => {
+        "header" => { "prefix" => "<Blog> " },
+        "metadata" => { "fields" => [ "date", "tags", "description" ] },
+        "domain" => "example.com"
+      }
+    )
+
+    read
+    post = find_post("a-week-with-the-apple-watch")
+    post.data["title"] = "Rails & Hotwire <3"
+    post.data["tags"] = [ "c++", "a<b" ]
+    post.data["description"] = "Tips & tricks"
+
+    generate_images
+
+    assert File.exist?(published_post_1_image_path)
+  end
+
+  def test_border_bottom_with_single_color_fill
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => { "border_bottom" => { "width" => 20, "fill" => "#4285F4" } }
+    )
+
+    read
+    generate_images
+
+    image = Vips::Image.new_from_file(published_post_1_image_path)
+    assert_equal [ 66, 133, 244 ], image.getpoint(600, 590).first(3).map(&:round)
+  end
+
+  def test_image_with_gravity_and_position_from_yaml
+    FileUtils.mkdir_p(source_dir("assets"))
+    Vips::Image.black(100, 100)
+      .new_from_image([ 255, 0, 0 ])
+      .copy(interpretation: :srgb)
+      .write_to_file(source_dir("assets", "logo.png"))
+
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => YAML.safe_load(<<~YAML)
+        image:
+          path: /assets/logo.png
+          gravity: se
+          position:
+            x: 10
+            y: 20
+      YAML
+    )
+
+    read
+    generate_images
+
+    # A 150x150 logo anchored to the bottom-right corner, 10px from the right and 20px from the bottom
+    image = Vips::Image.new_from_file(published_post_1_image_path)
+    assert_equal [ 255, 0, 0 ], image.getpoint(1115, 505).first(3).map(&:round)
   end
 
   def test_does_not_register_duplicate_static_files_for_existing_images
@@ -210,5 +286,11 @@ class JekyllOgImageTest < Minitest::Test
     @og_image.send(:add_domain, canvas, post, config)
 
     assert_equal config.margin_bottom, canvas.y_position
+  end
+
+  private
+
+  def find_post(slug)
+    @site.posts.docs.find { |post| post.data["slug"] == slug }
   end
 end

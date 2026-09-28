@@ -122,7 +122,7 @@ The following configuration options are available:
   * `height` – The height of the logo in pixels. Default: `150`
   * `radius` – The radius for rounded corners on the logo. Default: `50`
   * `position` – The position of the logo as `{x, y}` coordinates. Default: `{x: 80, y: 100}`
-  * `gravity` – The gravity anchor for logo positioning (nw, n, ne, w, e, sw, s, se). Default: `ne`
+  * `gravity` – The gravity anchor for logo positioning (nw, ne, sw, se). Default: `ne`
 
 * `metadata` – The metadata configuration options:
   * `fields` – Array of metadata fields to display. Available options: `"date"`, `"tags"`, or any custom front matter field. Default: `["date", "tags"]`

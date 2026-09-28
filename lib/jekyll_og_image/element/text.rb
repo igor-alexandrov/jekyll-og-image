@@ -1,6 +1,13 @@
 # frozen_string_literal: true
 
 class JekyllOgImage::Element::Text < JekyllOgImage::Element::Base
+  MARKUP_ESCAPES = { "&" => "&amp;", "<" => "&lt;", ">" => "&gt;" }.freeze
+
+  # Vips::Image.text parses its input as Pango markup, so plain text has to be escaped
+  def self.escape_markup(message)
+    message.to_s.gsub(/[&<>]/, MARKUP_ESCAPES)
+  end
+
   def initialize(message, gravity: :nw, width: nil, dpi: nil, color: "#000000", font: nil)
     @message = message
     @gravity = gravity
@@ -22,7 +29,7 @@ class JekyllOgImage::Element::Text < JekyllOgImage::Element::Base
 
     params[:wrap] = :word if wrap_supported?
 
-    text = Vips::Image.text(@message, **params)
+    text = Vips::Image.text(self.class.escape_markup(@message), **params)
 
     text = text
       .new_from_image(hex_to_rgb(@color))

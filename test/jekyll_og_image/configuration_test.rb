@@ -147,6 +147,22 @@ class JekyllOgImage::ConfigurationTest < Minitest::Test
     ), config.border_bottom
   end
 
+  def test_border_bottom_wraps_single_fill_in_array
+    config = JekyllOgImage::Configuration.new({
+      "border_bottom" => { "width" => 10, "fill" => "#4285F4" }
+    })
+
+    assert_equal [ "#4285F4" ], config.border_bottom.fill
+  end
+
+  def test_border_bottom_default_fill
+    config = JekyllOgImage::Configuration.new({
+      "border_bottom" => { "width" => 10, "fill" => nil }
+    })
+
+    assert_equal [ "#000000" ], config.border_bottom.fill
+  end
+
   def test_default_margin_bottom
     assert_equal 80, @default_config.margin_bottom
   end
@@ -167,6 +183,19 @@ class JekyllOgImage::ConfigurationTest < Minitest::Test
     assert_equal "foo.png", config.image.path
     assert_equal 150, config.image.width
     assert_equal 150, config.image.height
+  end
+
+  def test_image_gravity_and_position_from_yaml
+    config = JekyllOgImage::Configuration.new({
+      "image" => {
+        "path" => "bar.png",
+        "gravity" => "se",
+        "position" => { "x" => 10 }
+      }
+    })
+
+    assert_equal :se, config.image.gravity
+    assert_equal({ x: 10, y: 100 }, config.image.position)
   end
 
   def test_custom_image_new_format

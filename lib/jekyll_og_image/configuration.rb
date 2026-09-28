@@ -23,14 +23,16 @@ class JekyllOgImage::Configuration
 
   Border = Data.define(:width, :fill) do
     def initialize(width: 0, fill: nil)
-      fill.is_a?(Array) ? fill : [ fill ]
-      super(width: width, fill: fill)
+      super(width: width, fill: Array(fill || "#000000"))
     end
   end
 
   Image = Data.define(:path, :width, :height, :radius, :position, :gravity) do
-    def initialize(path: nil, width: 150, height: 150, radius: 50, position: { x: 80, y: 100 }, gravity: :ne)
-      super
+    def initialize(path: nil, width: 150, height: 150, radius: 50, position: {}, gravity: :ne)
+      # Values read from YAML have string keys and string gravity
+      position = { x: 80, y: 100 }.merge(position.transform_keys(&:to_sym))
+
+      super(path: path, width: width, height: height, radius: radius, position: position, gravity: gravity.to_sym)
     end
   end
 

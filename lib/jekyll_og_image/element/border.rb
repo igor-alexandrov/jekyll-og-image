@@ -7,7 +7,7 @@ class JekyllOgImage::Element::Border < JekyllOgImage::Element::Base
   def initialize(size, position: :bottom, fill: "#000000")
     @size = size
     @position = position
-    @fill = fill
+    @fill = Array(fill)
 
     validate_position!
   end
@@ -53,21 +53,15 @@ class JekyllOgImage::Element::Border < JekyllOgImage::Element::Base
   end
 
   def parts(canvas)
-    if @fill.is_a?(Array)
-      width, height = vertical? ? [ @size, (canvas.height / @fill.size) ] : [ (canvas.width / @fill.size), @size ]
+    width, height = vertical? ? [ @size, (canvas.height / @fill.size) ] : [ (canvas.width / @fill.size), @size ]
 
-      @fill.map.with_index do |item, index|
-        Part.new(
-          rgb: hex_to_rgb(item),
-          width: width,
-          height: height,
-          offset: index * (vertical? ? height : width)
-        )
-      end
-    else
-      length = vertical? ? canvas.height : canvas.width
-
-      [ Part.new(rgb: hex_to_rgb(@fill), length: length, offset: 0) ]
+    @fill.map.with_index do |item, index|
+      Part.new(
+        rgb: hex_to_rgb(item),
+        width: width,
+        height: height,
+        offset: index * (vertical? ? height : width)
+      )
     end
   end
 
