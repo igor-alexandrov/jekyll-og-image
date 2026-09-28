@@ -29,6 +29,9 @@ class JekyllOgImage::Generator < Jekyll::Generator
         next
       end
 
+      item_config = config.merge!(item.data["og_image"] || {})
+      next unless item_config.enabled?
+
       fallback_basename = if item.respond_to?(:basename_without_ext)
                             item.basename_without_ext
                             # rubocop:disable Layout/ElseAlignment # Disabled due to RuboCop error in v3.3.0
@@ -44,12 +47,14 @@ class JekyllOgImage::Generator < Jekyll::Generator
 
       if !File.exist?(absolute_image_path) || config.force?
         Jekyll.logger.info "Jekyll Og Image:", "Generating image #{absolute_image_path}" if config.verbose?
-        generate_image_for_document(site, item, absolute_image_path, config)
+        generate_image_for_document(site, item, absolute_image_path, item_config)
       else
         Jekyll.logger.info "Jekyll Og Image:", "Skipping image generation for #{relative_image_path} as it already exists." if config.verbose?
       end
 
-      register_static_file(site, base_output_dir, image_filename, config) if File.exist?(absolute_image_path)
+      next unless File.exist?(absolute_image_path)
+
+      register_static_file(site, base_output_dir, image_filename, config)
 
       item.data["image"] ||= {
         "path" => relative_image_path,
@@ -91,11 +96,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
     Jekyll.logger.info "Jekyll Og Image:", "Added #{base_output_dir}/#{image_filename} to static files" if config.verbose?
   end
 
-  def generate_image_for_document(site, item, path, base_config)
-    config = base_config.merge!(item.data["og_image"] || {})
-
-    return unless config.enabled?
-
+  def generate_image_for_document(site, item, path, config)
     canvas = generate_canvas(site, config)
     canvas = add_border_bottom(canvas, config) if config.border_bottom
     canvas = add_image(canvas, File.read(File.join(site.config["source"], config.image.path)), config) if config.image.path
@@ -218,7 +219,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
     options[:wrap] = :word if Vips.at_least_libvips?(8, 14)
 
     single_line_height = Vips::Image.text("Ay", **options).height
-    rendered_height = Vips::Image.text(text, **options).height
+    rendered_height = Vips::Image.text(JekyllOgImage::Element::Text.escape_markup(text), **options).height
 
     rendered_height <= (single_line_height * 1.6)
   end
