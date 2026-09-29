@@ -34,12 +34,6 @@ class JekyllOgImage::Element::Image < JekyllOgImage::Element::Base
 
   private
 
-  VALID_GRAVITY.each do |gravity|
-    define_method("gravity_#{gravity}?") do
-      @gravity == gravity
-    end
-  end
-
   def round_corners(image)
     mask = %(
       <svg viewBox="0 0 #{image.width} #{image.height}">

@@ -11,14 +11,14 @@ class JekyllOgImage::ConfigurationTest < Minitest::Test
     config = JekyllOgImage::Configuration.new({ "output_dir" => "foo" })
     other = JekyllOgImage::Configuration.new({ "output_dir" => "bar" })
 
-    assert_equal JekyllOgImage::Configuration.new({ "output_dir" => "bar" }), config.merge!(other)
+    assert_equal JekyllOgImage::Configuration.new({ "output_dir" => "bar" }), config.merge(other)
   end
 
   def test_merge_with_hash
     config = JekyllOgImage::Configuration.new({ "output_dir" => "foo" })
     other = { "output_dir" => "bar" }
 
-    assert_equal JekyllOgImage::Configuration.new({ "output_dir" => "bar" }), config.merge!(other)
+    assert_equal JekyllOgImage::Configuration.new({ "output_dir" => "bar" }), config.merge(other)
   end
 
   def test_default_output_dir

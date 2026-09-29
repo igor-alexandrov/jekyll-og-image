@@ -45,12 +45,6 @@ class JekyllOgImage::Element::Text < JekyllOgImage::Element::Base
 
   private
 
-  VALID_GRAVITY.each do |gravity|
-    define_method("gravity_#{gravity}?") do
-      @gravity == gravity
-    end
-  end
-
   def wrap_supported?
     # Vips::Image.text supports wrapping since vips 8.14.0
     # https://github.com/libvips/libvips/releases/tag/v8.14.0

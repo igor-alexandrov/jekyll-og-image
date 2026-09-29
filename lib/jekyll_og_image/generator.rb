@@ -29,18 +29,10 @@ class JekyllOgImage::Generator < Jekyll::Generator
         next
       end
 
-      item_config = config.merge!(item.data["og_image"] || {})
+      item_config = config.merge(item.data["og_image"] || {})
       next unless item_config.enabled?
 
-      fallback_basename = if item.respond_to?(:basename_without_ext)
-                            item.basename_without_ext
-                            # rubocop:disable Layout/ElseAlignment # Disabled due to RuboCop error in v3.3.0
-                          else
-                            # rubocop:enable Layout/ElseAlignment
-                            File.basename(item.name, File.extname(item.name))
-      end
-
-      slug = item.data["slug"] || Jekyll::Utils.slugify(item.data["title"] || fallback_basename)
+      slug = item.data["slug"] || Jekyll::Utils.slugify(item.data["title"] || basename_without_ext(item))
       image_filename = "#{slug}.png"
       absolute_image_path = File.join(absolute_output_dir, image_filename)
       relative_image_path = File.join("/", base_output_dir, image_filename) # Use leading slash for URL
@@ -70,7 +62,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
     when "posts"
       site.posts.docs
     when "pages"
-      site.pages.reject { |page| !page.html? }
+      site.pages.select(&:html?)
     else
       if site.collections.key?(type)
         site.collections[type].docs
@@ -79,6 +71,12 @@ class JekyllOgImage::Generator < Jekyll::Generator
         []
       end
     end
+  end
+
+  def basename_without_ext(item)
+    return item.basename_without_ext if item.respond_to?(:basename_without_ext)
+
+    File.basename(item.name, File.extname(item.name))
   end
 
   def register_static_file(site, base_output_dir, image_filename, config)
@@ -196,7 +194,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
     when "date"
       item.respond_to?(:date) && item.date ? item.date.strftime(config.metadata.date_format) : nil
     when "tags"
-      return nil unless item.data["tags"]&.is_a?(Array) && item.data["tags"].any?
+      return nil unless item.data["tags"].is_a?(Array) && item.data["tags"].any?
 
       item.data["tags"].map { |tag| "##{tag}" }.join(" ")
     else
