@@ -38,4 +38,16 @@ class Minitest::Test
   def collection_image_path
     source_dir("assets", "images", "og", "my_collection", "item1.png")
   end
+
+  def solid_image(width, height, rgb)
+    Vips::Image.black(width, height).new_from_image(rgb).copy(interpretation: :srgb)
+  end
+
+  def solid_png(width, height, rgb)
+    solid_image(width, height, rgb).write_to_buffer(".png")
+  end
+
+  def rgb_at(image, x, y)
+    image.getpoint(x, y).first(3).map(&:round)
+  end
 end
