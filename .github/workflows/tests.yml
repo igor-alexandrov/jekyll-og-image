@@ -2,6 +2,7 @@ name: Tests
 
 on:
   workflow_call:
+  workflow_dispatch:
   schedule:
     - cron: "0 3 * * 1" # Every monday at 3 AM
   push:
@@ -16,9 +17,10 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - 3.2.0
-          - 3.3.0
-          - 3.4.0
+          - "3.2"
+          - "3.3"
+          - "3.4"
+          - "4.0"
     timeout-minutes: 5
     steps:
     - uses: actions/checkout@v4

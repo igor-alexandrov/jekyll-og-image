@@ -2,6 +2,7 @@ name: Lint
 
 on:
   workflow_call:
+  workflow_dispatch:
   schedule:
     - cron: "0 3 * * 1" # Every monday at 3 AM
   push:
@@ -16,8 +17,8 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - 3.2.0
-          - 3.3.0
+          - "3.2"
+          - "4.0"
 
     timeout-minutes: 5
 
