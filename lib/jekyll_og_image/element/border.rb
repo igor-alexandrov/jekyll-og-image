@@ -15,14 +15,11 @@ class JekyllOgImage::Element::Border < JekyllOgImage::Element::Base
   def apply_to(canvas, &block)
     border = Vips::Image.black(*dimensions(canvas))
 
-    parts(canvas).each.with_index do |part, index|
+    parts(canvas).each do |part|
       image = Vips::Image.black(part.width, part.height).ifthenelse([ 0, 0, 0 ], part.rgb)
+      x, y = vertical? ? [ 0, part.offset ] : [ part.offset, 0 ]
 
-      if vertical?
-        border = border.composite(image, :over, x: [ 0 ], y: [ part.offset ]).flatten
-      else
-        border = border.composite(image, :over, x: [ part.offset ], y: [ 0 ]).flatten
-      end
+      border = border.composite(image, :over, x: [ x ], y: [ y ]).flatten
     end
 
     result = block.call(canvas, border) if block_given?
@@ -53,24 +50,20 @@ class JekyllOgImage::Element::Border < JekyllOgImage::Element::Base
   end
 
   def parts(canvas)
-    width, height = vertical? ? [ @size, (canvas.height / @fill.size) ] : [ (canvas.width / @fill.size), @size ]
+    length = vertical? ? canvas.height : canvas.width
 
-    @fill.map.with_index do |item, index|
-      Part.new(
-        rgb: hex_to_rgb(item),
-        width: width,
-        height: height,
-        offset: index * (vertical? ? height : width)
-      )
+    @fill.map.with_index do |color, index|
+      # Stripe edges are rounded down, so the last stripe absorbs any remainder
+      from = length * index / @fill.size
+      to = length * (index + 1) / @fill.size
+      width, height = vertical? ? [ @size, to - from ] : [ to - from, @size ]
+
+      Part.new(rgb: hex_to_rgb(color), width: width, height: height, offset: from)
     end
   end
 
   def vertical?
     @position == :left || @position == :right
-  end
-
-  def horizontal?
-    @position == :top || @position == :bottom
   end
 
   def validate_position!

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# require "anyway_config"
-
 class JekyllOgImage::Configuration
   Canvas = Data.define(:background_color, :background_image, :width, :height) do
     def initialize(background_color: "#FFFFFF", background_image: nil, width: 1200, height: 600)
@@ -46,7 +44,7 @@ class JekyllOgImage::Configuration
     @raw_config = raw_config
   end
 
-  def merge!(other)
+  def merge(other)
     config = Jekyll::Utils.deep_merge_hashes(
       @raw_config,
       other.to_h

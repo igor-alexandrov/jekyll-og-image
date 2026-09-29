@@ -5,6 +5,12 @@ class JekyllOgImage::Element::Base
 
   private
 
+  VALID_GRAVITY.each do |gravity|
+    define_method("gravity_#{gravity}?") do
+      @gravity == gravity
+    end
+  end
+
   def hex_to_rgb(input)
     case input
     when String
@@ -31,18 +37,9 @@ class JekyllOgImage::Element::Base
   end
 
   def composite_with_gravity(canvas, overlay, x, y)
-    if gravity_nw?
-      canvas.composite(overlay, :over, x: [ x ], y: [ y ]).flatten
-    elsif gravity_ne?
-      x = canvas.width - overlay.width - x
-      canvas.composite(overlay, :over, x: [ x ], y: [ y ]).flatten
-    elsif gravity_sw?
-      y = canvas.height - overlay.height - y
-      canvas.composite(overlay, :over, x: [ x ], y: [ y ]).flatten
-    elsif gravity_se?
-      x = canvas.width - overlay.width - x
-      y = canvas.height - overlay.height - y
-      canvas.composite(overlay, :over, x: [ x ], y: [ y ]).flatten
-    end
+    x = canvas.width - overlay.width - x if gravity_ne? || gravity_se?
+    y = canvas.height - overlay.height - y if gravity_sw? || gravity_se?
+
+    canvas.composite(overlay, :over, x: [ x ], y: [ y ]).flatten
   end
 end

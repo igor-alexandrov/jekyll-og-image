@@ -14,8 +14,6 @@ class JekyllOgImage::Element::Canvas < JekyllOgImage::Element::Base
 
       @canvas = @canvas.composite(overlay, :over, x: [ 0 ], y: [ 0 ]).flatten
     end
-
-    @canvas
   end
 
   def image(source, **opts, &block)
