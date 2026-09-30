@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3d4c"/>
+      <stop offset="1" stop-color="#1f2029"/>
+    </linearGradient>
+    <linearGradient id="logo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EDA895"/>
+      <stop offset="1" stop-color="#D51F06"/>
+    </linearGradient>
+    <clipPath id="card">
+      <rect x="48" y="148" width="416" height="248" rx="24"/>
+    </clipPath>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <rect x="96" y="108" width="320" height="248" rx="24" fill="#ffffff" opacity="0.18"/>
+  <rect x="72" y="128" width="368" height="248" rx="24" fill="#ffffff" opacity="0.36"/>
+
+  <g clip-path="url(#card)">
+    <rect x="48" y="148" width="416" height="248" fill="#ffffff"/>
+
+    <rect x="84" y="184" width="224" height="30" rx="15" fill="#2f313d"/>
+    <rect x="84" y="226" width="148" height="30" rx="15" fill="#2f313d"/>
+
+    <rect x="360" y="184" width="68" height="68" rx="18" fill="url(#logo)"/>
+
+    <rect x="84" y="290" width="112" height="12" rx="6" fill="#a4a4ab"/>
+    <rect x="84" y="316" width="168" height="12" rx="6" fill="#a4a4ab"/>
+    <rect x="360" y="290" width="68" height="12" rx="6" fill="#a4a4ab"/>
+
+    <rect x="48"    y="364" width="83.2" height="32" fill="#820C02"/>
+    <rect x="131.2" y="364" width="83.2" height="32" fill="#A91401"/>
+    <rect x="214.4" y="364" width="83.2" height="32" fill="#D51F06"/>
+    <rect x="297.6" y="364" width="83.2" height="32" fill="#DE3F24"/>
+    <rect x="380.8" y="364" width="83.2" height="32" fill="#EDA895"/>
+  </g>
+</svg>

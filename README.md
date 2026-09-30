@@ -1,10 +1,22 @@
-# Jekyll OG Image
+<p align="center">
+  <img src="assets/icon.svg" alt="Jekyll OG Image" width="128" height="128">
+</p>
 
-A Jekyll plugin to automatically generate open graph images for posts.
+<h1 align="center">Jekyll OG Image</h1>
 
-[![Gem Version](https://badge.fury.io/rb/jekyll-og-image.svg)](https://badge.fury.io/rb/jekyll-og-image)
-[![Lint](https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/lint.yml)
-[![Tests](https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/tests.yml)
+<p align="center">
+  A Jekyll plugin to automatically generate open graph images for posts.
+</p>
+
+<p align="center">
+  <a href="https://badge.fury.io/rb/jekyll-og-image"><img src="https://badge.fury.io/rb/jekyll-og-image.svg" alt="Gem Version"></a>
+  <a href="https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/lint.yml"><img src="https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/lint.yml/badge.svg?branch=main" alt="Lint"></a>
+  <a href="https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/tests.yml"><img src="https://github.com/igor-alexandrov/jekyll-og-image/actions/workflows/tests.yml/badge.svg?branch=main" alt="Tests"></a>
+</p>
+
+<p align="center">
+  <img src="examples/1.png" alt="Example open graph image" width="600">
+</p>
 
 ## Installation
 
@@ -23,13 +35,11 @@ plugins:
   - jekyll-og-image
 ```
 
-This plugin requires `libvips` to be installed. If you are using GitHub Pages to host your Jekyll site, don't forget to install `libvips` before running `jekyll build`. See the example below.
+The plugin requires Ruby 3.2 or newer and [libvips](https://www.libvips.org/install.html). If you are using GitHub Pages to host your Jekyll site, don't forget to install `libvips` before running `jekyll build`. See the example below.
 
 ``` yaml
 jobs:
   build:
-    needs:
-      - lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,16 +50,6 @@ jobs:
         with:
           ruby-version: .ruby-version
           bundler-cache: true
-
-      - name: Set Node.js 20.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.x
-
-      - name: Run install
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: install
 
       - name: Update apt
         env:
@@ -66,14 +66,13 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Build with Jekyll
-        run: ./bin/jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
+        run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
         env:
           JEKYLL_ENV: production
 
       - name: Upload artifact
         # Automatically uploads an artifact from the './_site' directory by default
         uses: actions/upload-pages-artifact@v3
-
 ```
 
 ## Usage
