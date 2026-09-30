@@ -21,23 +21,27 @@ class Minitest::Test
   end
 
   def published_post_1_image_path
-    source_dir("assets", "images", "og", "posts", "a-week-with-the-apple-watch.png")
+    source_dir("assets", "images", "og", "posts", "2018-01-12-a-week-with-the-apple-watch.png")
   end
 
   def published_post_2_image_path
-    source_dir("assets", "images", "og", "posts", "advanced-markdown-tips.png")
+    source_dir("assets", "images", "og", "posts", "2018-02-07-advanced-markdown-tips.png")
   end
 
   def draft_post_image_path
-    source_dir("assets", "images", "og", "posts", "what-is-jekyll.png")
+    source_dir("assets", "images", "og", "posts", "2018-02-10-what-is-jekyll.png")
   end
 
   def page_image_path
-    source_dir("assets", "images", "og", "pages", "about-us.png")
+    source_dir("assets", "images", "og", "pages", "about.png")
   end
 
   def collection_image_path
     source_dir("assets", "images", "og", "my_collection", "item1.png")
+  end
+
+  def manifest_path
+    source_dir("assets", "images", "og", ".jekyll-og-image.json")
   end
 
   def solid_image(width, height, rgb)
