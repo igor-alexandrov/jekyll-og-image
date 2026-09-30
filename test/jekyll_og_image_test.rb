@@ -204,6 +204,32 @@ class JekyllOgImageTest < Minitest::Test
     assert_equal [ 255, 0, 0 ], image.getpoint(1115, 505).first(3).map(&:round)
   end
 
+  def test_missing_logo_warns_and_generates_image_without_it
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => { "image" => "/assets/missing-logo.png" }
+    )
+
+    read
+    warnings = capture_warnings { generate_images }
+
+    assert File.exist?(published_post_1_image_path)
+    assert_equal [ "og_image.image.path file not found: /assets/missing-logo.png, skipping it" ], warnings
+  end
+
+  def test_missing_background_image_warns_and_generates_image_without_it
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => { "canvas" => { "background_image" => "/assets/missing-background.png" } }
+    )
+
+    read
+    warnings = capture_warnings { generate_images }
+
+    assert File.exist?(published_post_1_image_path)
+    assert_equal [ "og_image.canvas.background_image file not found: /assets/missing-background.png, skipping it" ], warnings
+  end
+
   def test_does_not_register_duplicate_static_files_for_existing_images
     FileUtils.mkdir_p(File.dirname(published_post_1_image_path))
     File.binwrite(published_post_1_image_path, "stub")
@@ -289,6 +315,12 @@ class JekyllOgImageTest < Minitest::Test
   end
 
   private
+
+  def capture_warnings
+    warnings = []
+    Jekyll.logger.stub(:warn, ->(_topic, message) { warnings << message }) { yield }
+    warnings
+  end
 
   def find_post(slug)
     @site.posts.docs.find { |post| post.data["slug"] == slug }

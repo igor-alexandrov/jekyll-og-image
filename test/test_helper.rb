@@ -6,6 +6,7 @@ $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "jekyll-og-image"
 
 require "minitest/autorun"
+require "minitest/mock"
 
 class Minitest::Test
   SOURCE_DIR = File.expand_path("source", __dir__)
