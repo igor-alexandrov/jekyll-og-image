@@ -163,6 +163,29 @@ class JekyllOgImage::ConfigurationTest < Minitest::Test
     assert_equal [ "#000000" ], config.border_bottom.fill
   end
 
+  def test_unknown_option_names_section_and_key
+    config = JekyllOgImage::Configuration.new({ "header" => { "colour" => "#000000" } })
+
+    error = assert_raises(Jekyll::Errors::InvalidConfigurationError) { config.header }
+    assert_equal "Unknown og_image.header option: colour. Valid options: font_family, color, prefix, suffix", error.message
+  end
+
+  def test_unknown_options_in_every_section
+    %w[canvas header content border_bottom image metadata].each do |section|
+      config = JekyllOgImage::Configuration.new({ section => { "typo" => 1 } })
+
+      error = assert_raises(Jekyll::Errors::InvalidConfigurationError) { config.public_send(section) }
+      assert_match(/\AUnknown og_image\.#{section} option: typo\./, error.message)
+    end
+  end
+
+  def test_section_that_is_not_a_mapping
+    config = JekyllOgImage::Configuration.new({ "canvas" => "#ffffff" })
+
+    error = assert_raises(Jekyll::Errors::InvalidConfigurationError) { config.canvas }
+    assert_equal 'og_image.canvas must be a set of options, got "#ffffff"', error.message
+  end
+
   def test_default_margin_bottom
     assert_equal 80, @default_config.margin_bottom
   end

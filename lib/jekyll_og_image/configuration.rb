@@ -86,26 +86,22 @@ class JekyllOgImage::Configuration
   end
 
   def canvas
-    @raw_config["canvas"] ? Canvas.new(**Jekyll::Utils.symbolize_hash_keys(@raw_config["canvas"])) : Canvas.new
+    build_section(Canvas, "canvas")
   end
 
   def header
-    @raw_config["header"] ? Header.new(**Jekyll::Utils.symbolize_hash_keys(@raw_config["header"])) : Header.new
+    build_section(Header, "header")
   end
 
   def content
-    @raw_config["content"] ? Content.new(**Jekyll::Utils.symbolize_hash_keys(@raw_config["content"])) : Content.new
+    build_section(Content, "content")
   end
 
   def image
-    if @raw_config["image"].is_a?(String)
-      # Legacy support: if image is just a string, convert it to the new format
-      Image.new(path: @raw_config["image"])
-    elsif @raw_config["image"]
-      Image.new(**Jekyll::Utils.symbolize_hash_keys(@raw_config["image"]))
-    else
-      Image.new
-    end
+    # Legacy support: if image is just a string, convert it to the new format
+    return Image.new(path: @raw_config["image"]) if @raw_config["image"].is_a?(String)
+
+    build_section(Image, "image")
   end
 
   def domain
@@ -113,15 +109,35 @@ class JekyllOgImage::Configuration
   end
 
   def border_bottom
-    @raw_config["border_bottom"] ? Border.new(**Jekyll::Utils.symbolize_hash_keys(@raw_config["border_bottom"])) : nil
+    build_section(Border, "border_bottom") if @raw_config["border_bottom"]
   end
 
   def margin_bottom
     80 + (border_bottom&.width || 0)
   end
 
-
   def metadata
-    @raw_config["metadata"] ? Metadata.new(**Jekyll::Utils.symbolize_hash_keys(@raw_config["metadata"])) : Metadata.new
+    build_section(Metadata, "metadata")
+  end
+
+  private
+
+  def build_section(klass, name)
+    value = @raw_config[name]
+    return klass.new unless value
+
+    unless value.is_a?(Hash)
+      raise Jekyll::Errors::InvalidConfigurationError, "og_image.#{name} must be a set of options, got #{value.inspect}"
+    end
+
+    options = Jekyll::Utils.symbolize_hash_keys(value)
+    unknown = options.keys - klass.members
+
+    if unknown.any?
+      raise Jekyll::Errors::InvalidConfigurationError,
+        "Unknown og_image.#{name} option: #{unknown.join(", ")}. Valid options: #{klass.members.join(", ")}"
+    end
+
+    klass.new(**options)
   end
 end
