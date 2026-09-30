@@ -173,7 +173,7 @@ class JekyllOgImageTest < Minitest::Test
     read
     generate_images
 
-    image = Vips::Image.new_from_file(published_post_1_image_path)
+    image = load_image(published_post_1_image_path)
     assert_equal [ 66, 133, 244 ], image.getpoint(600, 590).first(3).map(&:round)
   end
 
@@ -200,7 +200,7 @@ class JekyllOgImageTest < Minitest::Test
     generate_images
 
     # A 150x150 logo anchored to the bottom-right corner, 10px from the right and 20px from the bottom
-    image = Vips::Image.new_from_file(published_post_1_image_path)
+    image = load_image(published_post_1_image_path)
     assert_equal [ 255, 0, 0 ], image.getpoint(1115, 505).first(3).map(&:round)
   end
 
@@ -348,6 +348,66 @@ class JekyllOgImageTest < Minitest::Test
     refute @site.static_files.any? { |file| file.name == ".jekyll-og-image.json" }
   end
 
+  def test_layout_fits_smaller_canvas
+    @config = Jekyll::Utils.deep_merge_hashes(
+      @config,
+      "og_image" => { "canvas" => { "width" => 600, "height" => 300 }, "domain" => "example.com" }
+    )
+
+    read
+    generate_images
+
+    image = load_image(published_post_1_image_path)
+    left, top, width, height = image.find_trim(background: [ 255, 255, 255 ], threshold: 10)
+
+    # Everything stays inside the scaled 40px margins
+    assert_equal [ 600, 300 ], [ image.width, image.height ]
+    assert_operator left, :>=, 40
+    assert_operator top, :>=, 50
+    assert_operator left + width, :<=, 560
+    assert_operator top + height, :<=, 260
+  end
+
+  def test_long_title_stops_above_metadata_line
+    @config = Jekyll::Utils.deep_merge_hashes(@config, "og_image" => { "metadata" => { "fields" => [] } })
+
+    read
+    find_post("a-week-with-the-apple-watch").data["title"] = "A Week With the Apple Watch " * 6
+    generate_images
+
+    image = load_image(published_post_1_image_path)
+    _, top, _, height = image.find_trim(background: [ 255, 255, 255 ], threshold: 10)
+
+    # Above the 80px bottom margin, the 30px gap and a metadata line
+    assert_operator top + height, :<=, 600 - 80 - 30
+  end
+
+  def test_front_matter_canvas_size
+    read
+    post = find_post("a-week-with-the-apple-watch")
+    post.data["og_image"] = { "canvas" => { "width" => 800, "height" => 400 } }
+    generate_images
+
+    image = load_image(published_post_1_image_path)
+    assert_equal [ 800, 400 ], [ image.width, image.height ]
+    assert_equal [ 800, 400 ], post.data["image"].values_at("width", "height")
+    assert_equal [ 1200, 600 ], find_post("advanced-markdown-tips").data["image"].values_at("width", "height")
+  end
+
+  def test_front_matter_force
+    read
+    generate_images
+    File.binwrite(published_post_1_image_path, "unchanged")
+    File.binwrite(published_post_2_image_path, "unchanged")
+
+    read
+    find_post("a-week-with-the-apple-watch").data["og_image"] = { "force" => true }
+    generate_images
+
+    refute_equal "unchanged", File.binread(published_post_1_image_path)
+    assert_equal "unchanged", File.binread(published_post_2_image_path)
+  end
+
   def test_does_not_register_duplicate_static_files_for_existing_images
     FileUtils.mkdir_p(File.dirname(published_post_1_image_path))
     File.binwrite(published_post_1_image_path, "stub")
@@ -377,7 +437,7 @@ class JekyllOgImageTest < Minitest::Test
     post.data["description"] = "Short description"
     config = JekyllOgImage::Configuration.new(@config["og_image"])
 
-    metadata_text = @og_image.send(:metadata_text_for, post, config)
+    metadata_text = @og_image.send(:metadata_text_for, post, config, JekyllOgImage::Layout.new(config))
 
     assert_includes metadata_text, "Short description"
   end
@@ -398,7 +458,7 @@ class JekyllOgImageTest < Minitest::Test
       "and therefore should not be included in the generated metadata footer text."
     config = JekyllOgImage::Configuration.new(@config["og_image"])
 
-    metadata_text = @og_image.send(:metadata_text_for, post, config)
+    metadata_text = @og_image.send(:metadata_text_for, post, config, JekyllOgImage::Layout.new(config))
 
     refute_includes metadata_text, "This is a very long description"
   end
@@ -427,9 +487,9 @@ class JekyllOgImageTest < Minitest::Test
       end
     end.new
 
-    @og_image.send(:add_domain, canvas, post, config)
+    @og_image.send(:add_domain, canvas, config, JekyllOgImage::Layout.new(config))
 
-    assert_equal config.margin_bottom, canvas.y_position
+    assert_equal JekyllOgImage::Layout.new(config).bottom, canvas.y_position
   end
 
   private

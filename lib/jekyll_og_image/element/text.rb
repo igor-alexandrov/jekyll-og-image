@@ -8,10 +8,11 @@ class JekyllOgImage::Element::Text < JekyllOgImage::Element::Base
     message.to_s.gsub(/[&<>]/, MARKUP_ESCAPES)
   end
 
-  def initialize(message, gravity: :nw, width: nil, dpi: nil, color: "#000000", font: nil)
+  def initialize(message, gravity: :nw, width: nil, height: nil, dpi: nil, color: "#000000", font: nil)
     @message = message
     @gravity = gravity
     @width = width
+    @height = height
     @dpi = dpi
     @color = color
     @font = font
@@ -31,6 +32,11 @@ class JekyllOgImage::Element::Text < JekyllOgImage::Element::Base
 
     text = Vips::Image.text(self.class.escape_markup(@message), **params)
 
+    # Too tall: given a width and height instead of a dpi, libvips picks the largest dpi that fits
+    if @height && text.height > @height && height_supported?
+      text = Vips::Image.text(self.class.escape_markup(@message), **params.except(:dpi), height: @height)
+    end
+
     text = text
       .new_from_image(hex_to_rgb(@color))
       .copy(interpretation: :srgb)
@@ -44,6 +50,11 @@ class JekyllOgImage::Element::Text < JekyllOgImage::Element::Base
   end
 
   private
+
+  def height_supported?
+    # Vips::Image.text fits text to a height since vips 8.8.0
+    Vips.at_least_libvips?(8, 8)
+  end
 
   def wrap_supported?
     # Vips::Image.text supports wrapping since vips 8.14.0

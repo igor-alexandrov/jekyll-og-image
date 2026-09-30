@@ -13,8 +13,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
 
     # `jekyll serve` reuses this generator for every rebuild. Forcing only the first
     # build stops rewritten images from triggering the watcher in an endless loop.
-    @force = config.force? && !@forced
-    @forced = true
+    @first_build = !@built
+    @built = true
 
     config.collections.each do |type|
       process_collection(site, type, config, manifest)
@@ -42,7 +42,9 @@ class JekyllOgImage::Generator < Jekyll::Generator
       absolute_image_path = File.join(site.source, site_image_path)
       digest = image_digest(site, item, item_config)
 
-      if @force || !File.exist?(absolute_image_path) || !manifest.fresh?(image_path, digest)
+      force = @first_build && item_config.force?
+
+      if force || !File.exist?(absolute_image_path) || !manifest.fresh?(image_path, digest)
         Jekyll.logger.info "Jekyll Og Image:", "Generating image #{absolute_image_path}" if config.verbose?
         FileUtils.mkdir_p(File.dirname(absolute_image_path))
         generate_image_for_document(site, item, absolute_image_path, item_config)
@@ -57,8 +59,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
 
       item.data["image"] ||= {
         "path" => File.join("/", site_image_path), # Use leading slash for URL
-        "width" => JekyllOgImage.config.canvas.width,
-        "height" => JekyllOgImage.config.canvas.height,
+        "width" => item_config.canvas.width,
+        "height" => item_config.canvas.height,
         "alt" => item.data["title"]
       }
     end
@@ -101,7 +103,6 @@ class JekyllOgImage::Generator < Jekyll::Generator
   def image_digest(site, item, config)
     inputs = [
       JekyllOgImage::VERSION,
-      JekyllOgImage.config.canvas.to_h.slice(:width, :height),
       config.canvas.to_h,
       config.header.to_h,
       config.content.to_h,
@@ -142,13 +143,15 @@ class JekyllOgImage::Generator < Jekyll::Generator
   end
 
   def generate_image_for_document(site, item, path, config)
+    layout = JekyllOgImage::Layout.new(config)
+
     canvas = generate_canvas(site, config)
-    canvas = add_border_bottom(canvas, config) if config.border_bottom
+    canvas = add_border_bottom(canvas, config, layout) if config.border_bottom
     logo = read_source_file(site, config.image.path, "og_image.image.path") if config.image.path
-    canvas = add_image(canvas, logo, config) if logo
-    canvas = add_header(canvas, item, config)
-    canvas = add_metadata(canvas, item, config)
-    canvas = add_domain(canvas, item, config) if config.domain
+    canvas = add_image(canvas, logo, config, layout) if logo
+    canvas = add_header(canvas, item, config, layout)
+    canvas = add_metadata(canvas, item, config, layout)
+    canvas = add_domain(canvas, config, layout) if config.domain
 
     canvas.save(path)
   end
@@ -158,7 +161,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
       background_image = read_source_file(site, config.canvas.background_image, "og_image.canvas.background_image")
     end
 
-    JekyllOgImage::Element::Canvas.new(JekyllOgImage.config.canvas.width, JekyllOgImage.config.canvas.height,
+    JekyllOgImage::Element::Canvas.new(config.canvas.width, config.canvas.height,
       background_color: config.canvas.background_color,
       background_image: background_image
     )
@@ -173,62 +176,51 @@ class JekyllOgImage::Generator < Jekyll::Generator
     nil
   end
 
-  def add_border_bottom(canvas, config)
-    canvas.border(config.border_bottom.width,
+  def add_border_bottom(canvas, config, layout)
+    canvas.border(layout.border_width,
       position: :bottom,
       fill: config.border_bottom.fill
     )
   end
 
-  def add_image(canvas, image_data, config)
-    image_config = config.image
+  def add_image(canvas, image_data, config, layout)
     canvas.image(image_data,
-      gravity: image_config.gravity,
-      width: image_config.width,
-      height: image_config.height,
-      radius: image_config.radius
-    ) { |_canvas, _text| { x: image_config.position[:x], y: image_config.position[:y] } }
+      gravity: config.image.gravity,
+      width: layout.logo_width,
+      height: layout.logo_height,
+      radius: layout.logo_radius
+    ) { |_canvas, _image| layout.logo_position }
   end
 
-  def add_header(canvas, item, config)
+  def add_header(canvas, item, config, layout)
     title = item.data["title"] || "Untitled"
     full_title = "#{config.header.prefix}#{title}#{config.header.suffix}"
 
-    # Calculate available width for header text to avoid overlap with image
-    header_width = if config.image.path
-      # Canvas width - left margin - right margin - image width - spacing
-      # 1200 - 80 - 80 - image_width - 30 (spacing)
-      1040 - config.image.width - 30
-    else
-      1040
-    end
-
     canvas.text(full_title,
-      width: header_width,
+      width: layout.header_width,
+      height: layout.header_max_height(content_line_height(config, layout)),
       color: config.header.color,
-      dpi: 400,
+      dpi: layout.header_dpi,
       font: config.header.font_family
-    ) { |_canvas, _text| { x: 80, y: 100 } }
+    ) { |_canvas, _text| { x: layout.margin, y: layout.header_top } }
   end
 
-  def add_metadata(canvas, item, config)
-    metadata_text = metadata_text_for(item, config)
+  def add_metadata(canvas, item, config, layout)
+    metadata_text = metadata_text_for(item, config, layout)
     return canvas if metadata_text.empty?
-
-    metadata_width = metadata_width_for(config)
 
     canvas.text(metadata_text,
       gravity: :sw,
-      width: metadata_width,
+      width: metadata_width_for(config, layout),
       color: config.content.color,
-      dpi: 150,
+      dpi: layout.content_dpi,
       font: config.content.font_family
-    ) { |_canvas, _text| { x: 80, y: config.margin_bottom } }
+    ) { |_canvas, _text| { x: layout.margin, y: layout.bottom } }
   end
 
-  def metadata_text_for(item, config)
+  def metadata_text_for(item, config, layout)
     metadata_parts = []
-    metadata_width = metadata_width_for(config)
+    metadata_width = metadata_width_for(config, layout)
 
     config.metadata.fields.each do |field|
       metadata_value = metadata_value_for(item, field, config)
@@ -236,7 +228,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
 
       if field == "description"
         candidate_text = (metadata_parts + [ metadata_value ]).join(config.metadata.separator)
-        next unless metadata_text_fits_single_line?(candidate_text, metadata_width, config)
+        next unless metadata_text_fits_single_line?(candidate_text, metadata_width, config, layout)
       end
 
       metadata_parts << metadata_value
@@ -259,34 +251,38 @@ class JekyllOgImage::Generator < Jekyll::Generator
     end
   end
 
-  def metadata_width_for(config)
-    config.domain ? 600 : 1040
+  # The metadata line shares the bottom row with the domain
+  def metadata_width_for(config, layout)
+    return layout.content_width unless config.domain
+
+    layout.content_width - render_content_text(config.domain, config, layout).width - layout.gap
   end
 
-  def metadata_text_fits_single_line?(text, metadata_width, config)
-    options = {
-      width: metadata_width,
-      dpi: 150,
-      font: config.content.font_family,
-      align: :low
-    }
-    options[:wrap] = :word if Vips.at_least_libvips?(8, 14)
+  def metadata_text_fits_single_line?(text, metadata_width, config, layout)
+    rendered_height = render_content_text(text, config, layout, width: metadata_width).height
 
-    single_line_height = Vips::Image.text("Ay", **options).height
-    rendered_height = Vips::Image.text(JekyllOgImage::Element::Text.escape_markup(text), **options).height
+    rendered_height <= (content_line_height(config, layout) * 1.6)
+  end
 
-    rendered_height <= (single_line_height * 1.6)
+  def content_line_height(config, layout)
+    render_content_text("Ay", config, layout).height
+  end
+
+  def render_content_text(text, config, layout, width: nil)
+    options = { dpi: layout.content_dpi, font: config.content.font_family, align: :low }
+    options[:width] = width if width
+    options[:wrap] = :word if width && Vips.at_least_libvips?(8, 14)
+
+    Vips::Image.text(JekyllOgImage::Element::Text.escape_markup(text), **options)
   end
 
 
-  def add_domain(canvas, _item, config)
-    y_pos = config.margin_bottom
-
+  def add_domain(canvas, config, layout)
     canvas.text(config.domain,
       gravity: :se,
       color: config.content.color,
-      dpi: 150,
+      dpi: layout.content_dpi,
       font: config.content.font_family
-    ) { |_canvas, _text| { x: 80, y: y_pos } }
+    ) { |_canvas, _text| { x: layout.margin, y: layout.bottom } }
   end
 end
