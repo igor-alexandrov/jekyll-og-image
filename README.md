@@ -11,6 +11,7 @@ A Jekyll plugin to automatically generate open graph images for posts.
 Add this line to your site's Gemfile:
 
 ```ruby
+  gem 'jekyll-seo-tag'
   gem 'jekyll-og-image'
 ```
 
@@ -77,7 +78,7 @@ jobs:
 
 ## Usage
 
-Jekyll OG Image works together with [jekyll-seo-tag](https://github.com/jekyll/jekyll-seo-tag) plugin. It automatically generates open graph images for posts and inserts them into the posts metadata.
+Jekyll OG Image works together with the [jekyll-seo-tag](https://github.com/jekyll/jekyll-seo-tag) plugin. It generates open graph images for posts and sets them as the `image` in each post's front matter, which jekyll-seo-tag turns into `og:image` and `twitter:image` meta tags. jekyll-seo-tag isn't installed automatically, so add it to your Gemfile yourself, as shown above.
 
 ## Configuration
 
