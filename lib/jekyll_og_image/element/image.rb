@@ -18,12 +18,13 @@ class JekyllOgImage::Element::Image < JekyllOgImage::Element::Base
       image = image.flatten
     end
 
-    image = round_corners(image) if @radius
-
     if @width && @height
       ratio = calculate_ratio(image, @width, @height, :min)
       image = image.resize(ratio)
     end
+
+    # Rounded after resizing, so the radius is in output pixels whatever the source size
+    image = round_corners(image) if @radius
 
     result = block.call(canvas, image) if block_given?
 
