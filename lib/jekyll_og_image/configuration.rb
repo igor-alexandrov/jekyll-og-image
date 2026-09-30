@@ -112,10 +112,6 @@ class JekyllOgImage::Configuration
     build_section(Border, "border_bottom") if @raw_config["border_bottom"]
   end
 
-  def margin_bottom
-    80 + (border_bottom&.width || 0)
-  end
-
   def metadata
     build_section(Metadata, "metadata")
   end

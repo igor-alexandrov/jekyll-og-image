@@ -111,10 +111,10 @@ Paths to images (`image.path`, `canvas.background_image`) are relative to the si
 * `canvas` – The canvas configuration options:
   * `background_color` – The background color of the canvas. Default: `#FFFFFF`
   * `background_image` – The background image of the canvas. Default: `nil`
-  * `width` – The width of the generated image in pixels. Default: `1200`
+  * `width` – The width of the generated image in pixels. The layout is designed for a 1200px-wide canvas and scales with this width: margins, text sizes, and the logo and border sizes below are all given for 1200px. Default: `1200`
   * `height` – The height of the generated image in pixels. Default: `600`
 
-* `header` – The header configuration options:
+* `header` – The header configuration options. A title too long for the space above the metadata line is shrunk to fit.
   * `font_family` – The font family of the header text. Default: `Helvetica, Bold`
   * `color` – The color of the header text. Default: `#2f313d`
   * `prefix` – Text to prepend to the title. Default: `""`

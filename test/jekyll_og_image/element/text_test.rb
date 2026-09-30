@@ -63,6 +63,22 @@ class JekyllOgImage::Element::TextTest < Minitest::Test
     assert_operator wrapped[3], :>, one_line[3]
   end
 
+  def test_shrinks_text_taller_than_height
+    message = "A title long enough to wrap onto several lines at this width"
+    unlimited = JekyllOgImage::Element::Text.new(message, width: 200, dpi: 150).apply_to(@canvas)
+    limited = JekyllOgImage::Element::Text.new(message, width: 200, height: 40, dpi: 150).apply_to(@canvas)
+
+    assert_operator ink_box(unlimited)[3], :>, 40
+    assert_operator ink_box(limited)[3], :<=, 40
+  end
+
+  def test_keeps_size_of_text_within_height
+    unlimited = JekyllOgImage::Element::Text.new("Hi", dpi: 150).apply_to(@canvas)
+    limited = JekyllOgImage::Element::Text.new("Hi", height: 90, dpi: 150).apply_to(@canvas)
+
+    assert_equal ink_box(unlimited), ink_box(limited)
+  end
+
   def test_rejects_invalid_gravity
     assert_raises(ArgumentError) { JekyllOgImage::Element::Text.new("Hi", gravity: :center) }
   end

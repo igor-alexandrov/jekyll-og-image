@@ -186,17 +186,6 @@ class JekyllOgImage::ConfigurationTest < Minitest::Test
     assert_equal 'og_image.canvas must be a set of options, got "#ffffff"', error.message
   end
 
-  def test_default_margin_bottom
-    assert_equal 80, @default_config.margin_bottom
-  end
-
-  def test_margin_bottom_with_border
-    config = JekyllOgImage::Configuration.new({
-      "border_bottom" => { "width" => 10 }
-    })
-    assert_equal 90, config.margin_bottom
-  end
-
   def test_default_image
     assert_nil @default_config.image.path
   end

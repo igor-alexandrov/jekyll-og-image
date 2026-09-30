@@ -44,6 +44,12 @@ class Minitest::Test
     source_dir("assets", "images", "og", ".jekyll-og-image.json")
   end
 
+  # Reads through a buffer: libvips caches new_from_file by filename, so tests that
+  # rewrite the same path would otherwise get a previous test's image.
+  def load_image(path)
+    Vips::Image.new_from_buffer(File.binread(path), "")
+  end
+
   def solid_image(width, height, rgb)
     Vips::Image.black(width, height).new_from_image(rgb).copy(interpretation: :srgb)
   end
