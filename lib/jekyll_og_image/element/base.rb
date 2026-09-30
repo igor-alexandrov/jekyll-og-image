@@ -13,12 +13,14 @@ class JekyllOgImage::Element::Base
 
   def hex_to_rgb(input)
     case input
-    when String
-      input.match(/#(..)(..)(..)/)[1..3].map(&:hex)
     when Array
       input
+    when /\A#\h{3}\z/
+      input[1..].chars.map { |digit| (digit * 2).hex }
+    when /\A#\h{6}\z/
+      input[1..].scan(/\h\h/).map(&:hex)
     else
-      raise ArgumentError, "Unknown input #{input.inspect}"
+      raise ArgumentError, "Invalid color #{input.inspect}, expected a hex color like \"#FFFFFF\" or \"#FFF\""
     end
   end
 

@@ -21,6 +21,13 @@ class JekyllOgImage::Element::BorderTest < Minitest::Test
     assert_equal WHITE, rgb_at(image, 150, 79)
   end
 
+  def test_short_hex_fill
+    image = apply(10, position: :bottom, fill: [ "#f00", "#00F" ])
+
+    assert_equal RED, rgb_at(image, 0, 85)
+    assert_equal BLUE, rgb_at(image, 299, 85)
+  end
+
   def test_top_border
     image = apply(10, position: :top, fill: "#ff0000")
 
