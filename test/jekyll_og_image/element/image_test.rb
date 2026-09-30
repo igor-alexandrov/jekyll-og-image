@@ -50,6 +50,16 @@ class JekyllOgImage::Element::ImageTest < Minitest::Test
     assert_equal RED, rgb_at(image, 20, 0)
   end
 
+  def test_corner_radius_does_not_depend_on_source_size
+    small = apply(source: solid_png(40, 40, RED), width: 40, height: 40, radius: 10)
+    large = apply(source: solid_png(400, 400, RED), width: 40, height: 40, radius: 10)
+
+    # A 10px radius cuts ~3px deep along the diagonal
+    assert_equal WHITE, rgb_at(large, 1, 1)
+    assert_equal RED, rgb_at(large, 4, 4)
+    assert_equal (small - large).abs.max, 0
+  end
+
   def test_accepts_source_with_alpha_channel
     source = solid_image(20, 20, RED).bandjoin(255).write_to_buffer(".png")
     image = apply(source: source)

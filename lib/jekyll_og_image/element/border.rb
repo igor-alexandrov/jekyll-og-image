@@ -37,10 +37,6 @@ class JekyllOgImage::Element::Border < JekyllOgImage::Element::Base
 
   private
 
-  def hex_to_rgb(hex)
-    hex.match(/#(..)(..)(..)/)[1..3].map { |x| x.hex }
-  end
-
   def dimensions(canvas)
     if vertical?
       [ @size, canvas.height ]

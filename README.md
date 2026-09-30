@@ -86,6 +86,10 @@ The plugin can be configured in the `_config.yml` file or in the post's front ma
 
 The following configuration options are available:
 
+Colors are hex values in `"#RRGGBB"` or `"#RGB"` form. Quote them in YAML, because an unquoted `#` starts a comment.
+
+Paths to images (`image.path`, `canvas.background_image`) are relative to the site's source directory. If a file doesn't exist, the plugin logs a warning and generates the image without it.
+
 * `collections` - An array specifying which types of collections to generate images for. Supports `"posts"`, `"pages"`, and the names of any custom collections. Default: `["posts"]`
 
 * `output_dir` – The directory where the generated images will be saved. Images will be placed in subdirectories named after their collection type (e.g., `assets/images/og/posts`, `assets/images/og/pages`). Default: `assets/images/og`
@@ -112,7 +116,7 @@ The following configuration options are available:
   * `color` – The color of the content text. Default: `#535358`
 
 * `border_bottom` – The border bottom configuration options:
-  * `width` – The width of the border bottom. Default: `20`
+  * `width` – The width of the border bottom. Default: `0`
   * `fill` – The array of colors to fill the border bottom. Default: `["#000000"]`
 
 * `domain` – The domain name to use in the image. Default: `nil`

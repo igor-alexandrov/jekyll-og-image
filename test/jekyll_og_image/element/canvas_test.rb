@@ -13,6 +13,18 @@ class JekyllOgImage::Element::CanvasTest < Minitest::Test
     assert_equal [ 66, 133, 244 ], rgb_at(image, 199, 99)
   end
 
+  def test_accepts_short_and_long_hex_colors
+    assert_equal [ 170, 187, 204 ], rgb_at(render(JekyllOgImage::Element::Canvas.new(10, 10, background_color: "#abc")), 0, 0)
+    assert_equal [ 170, 187, 204 ], rgb_at(render(JekyllOgImage::Element::Canvas.new(10, 10, background_color: "#AABBCC")), 0, 0)
+  end
+
+  def test_rejects_invalid_colors
+    [ "red", "#ff", "#ffff", "#gggggg", "ffffff", nil ].each do |color|
+      error = assert_raises(ArgumentError) { JekyllOgImage::Element::Canvas.new(10, 10, background_color: color) }
+      assert_includes error.message, "Invalid color #{color.inspect}"
+    end
+  end
+
   def test_background_image_covers_canvas
     # A square image on a 2:1 canvas is scaled up until it covers the full width
     canvas = JekyllOgImage::Element::Canvas.new(200, 100, background_image: solid_png(50, 50, RED))

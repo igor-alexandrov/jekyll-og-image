@@ -5,6 +5,7 @@ class JekyllOgImage::Generator < Jekyll::Generator
 
   def generate(site)
     config = JekyllOgImage.config
+    @missing_files = Set.new
 
     config.collections.each do |type|
       process_collection(site, type, config)
@@ -97,7 +98,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
   def generate_image_for_document(site, item, path, config)
     canvas = generate_canvas(site, config)
     canvas = add_border_bottom(canvas, config) if config.border_bottom
-    canvas = add_image(canvas, File.read(File.join(site.config["source"], config.image.path)), config) if config.image.path
+    logo = read_source_file(site, config.image.path, "og_image.image.path") if config.image.path
+    canvas = add_image(canvas, logo, config) if logo
     canvas = add_header(canvas, item, config)
     canvas = add_metadata(canvas, item, config)
     canvas = add_domain(canvas, item, config) if config.domain
@@ -106,15 +108,23 @@ class JekyllOgImage::Generator < Jekyll::Generator
   end
 
   def generate_canvas(site, config)
-    background_image = if config.canvas.background_image
-      bg_path = File.join(site.config["source"], config.canvas.background_image.gsub(/^\//, ""))
-      File.exist?(bg_path) ? File.read(bg_path) : nil
+    if config.canvas.background_image
+      background_image = read_source_file(site, config.canvas.background_image, "og_image.canvas.background_image")
     end
 
     JekyllOgImage::Element::Canvas.new(JekyllOgImage.config.canvas.width, JekyllOgImage.config.canvas.height,
       background_color: config.canvas.background_color,
       background_image: background_image
     )
+  end
+
+  def read_source_file(site, path, option)
+    absolute_path = File.join(site.source, path)
+    return File.binread(absolute_path) if File.file?(absolute_path)
+
+    # Warn once per build, not once per document
+    Jekyll.logger.warn "Jekyll Og Image:", "#{option} file not found: #{path}, skipping it" if @missing_files.add?(path)
+    nil
   end
 
   def add_border_bottom(canvas, config)
