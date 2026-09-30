@@ -79,6 +79,16 @@ jobs:
 
 Jekyll OG Image works together with the [jekyll-seo-tag](https://github.com/jekyll/jekyll-seo-tag) plugin. It generates open graph images for posts and sets them as the `image` in each post's front matter, which jekyll-seo-tag turns into `og:image` and `twitter:image` meta tags. jekyll-seo-tag isn't installed automatically, so add it to your Gemfile yourself, as shown above.
 
+### Regenerating images
+
+An image is regenerated when anything that affects it changes: the document's title or metadata, the plugin configuration (site-wide or in front matter), the logo or background image files, or the plugin version. Otherwise the existing image is kept, so builds stay fast and `jekyll serve` doesn't rewrite unchanged files.
+
+To track this, the plugin keeps a fingerprint of each image in `.jekyll-og-image.json` inside `output_dir`. Jekyll doesn't publish it. If you commit generated images to your repository, commit this file too; without it, every image is regenerated once.
+
+### Upgrading from 2.x
+
+Images used to be named after the document's title or slug, which let two documents with the same title share one image. They are now named after the source file (see `output_dir` below), so every image gets a new path and URL on the first build after upgrading. The old images are left in place. Delete them from `output_dir` if you committed them to your repository.
+
 ## Configuration
 
 The plugin can be configured in the `_config.yml` file or in the post's front matter.
@@ -91,9 +101,9 @@ Paths to images (`image.path`, `canvas.background_image`) are relative to the si
 
 * `collections` - An array specifying which types of collections to generate images for. Supports `"posts"`, `"pages"`, and the names of any custom collections. Default: `["posts"]`
 
-* `output_dir` – The directory where the generated images will be saved. Images will be placed in subdirectories named after their collection type (e.g., `assets/images/og/posts`, `assets/images/og/pages`). Default: `assets/images/og`
+* `output_dir` – The directory where the generated images will be saved. Images are placed in a subdirectory named after their collection type and named after their source file, e.g. `_posts/2024-02-15-hello.md` → `assets/images/og/posts/2024-02-15-hello.png` and `blog/index.md` → `assets/images/og/pages/blog/index.png`. Default: `assets/images/og`
 
-* `force` – If set to `true`, the plugin will generate an image for every document, even if the document already has an image. Default: `false`
+* `force` – If set to `true`, every image is regenerated on each build, even when it is up to date. Rarely needed, since images are regenerated automatically when they change (see [Regenerating images](#regenerating-images)). Under `jekyll serve`, it applies to the first build only. Default: `false`
 * `verbose`  – If set to `true`, the plugin will output additional information about the image generation process. Default: `false`
 
 * `skip_drafts` – If set to `true`, the plugin will skip post drafts when generating images. Default: `true`

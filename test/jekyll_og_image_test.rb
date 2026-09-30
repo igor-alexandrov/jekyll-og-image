@@ -230,6 +230,124 @@ class JekyllOgImageTest < Minitest::Test
     assert_equal [ "og_image.canvas.background_image file not found: /assets/missing-background.png, skipping it" ], warnings
   end
 
+  def test_names_images_after_source_file_path
+    @config = Jekyll::Utils.deep_merge_hashes(@config, "og_image" => { "collections" => [ "pages" ] })
+
+    read
+    pages = %w[blog docs].map do |dir|
+      Jekyll::PageWithoutAFile.new(@site, @site.source, dir, "index.html").tap do |page|
+        page.data["title"] = "Index"
+        @site.pages << page
+      end
+    end
+    generate_images
+
+    # Same title, different files: each page gets its own image
+    assert File.exist?(source_dir("assets", "images", "og", "pages", "blog", "index.png"))
+    assert File.exist?(source_dir("assets", "images", "og", "pages", "docs", "index.png"))
+    assert_equal "/assets/images/og/pages/blog/index.png", pages.first.data["image"]["path"]
+    assert @site.static_files.any? { |file| file.relative_path == "/assets/images/og/pages/blog/index.png" }
+  end
+
+  def test_keeps_up_to_date_images_across_builds
+    read
+    generate_images
+    File.binwrite(published_post_1_image_path, "unchanged")
+
+    read
+    generate_images
+
+    assert_equal "unchanged", File.binread(published_post_1_image_path)
+  end
+
+  def test_regenerates_image_when_title_changes
+    read
+    generate_images
+    File.binwrite(published_post_1_image_path, "unchanged")
+    File.binwrite(published_post_2_image_path, "unchanged")
+
+    find_post("a-week-with-the-apple-watch").data["title"] = "A Month With the Apple Watch"
+    generate_images
+
+    refute_equal "unchanged", File.binread(published_post_1_image_path)
+    assert_equal "unchanged", File.binread(published_post_2_image_path)
+    assert_equal 1, @site.static_files.count { |file| file.relative_path == "/assets/images/og/posts/2018-01-12-a-week-with-the-apple-watch.png" }
+  end
+
+  def test_regenerates_image_when_metadata_changes
+    read
+    generate_images
+    File.binwrite(published_post_1_image_path, "unchanged")
+
+    find_post("a-week-with-the-apple-watch").data["tags"] = [ "Watch" ]
+    generate_images
+
+    refute_equal "unchanged", File.binread(published_post_1_image_path)
+  end
+
+  def test_regenerates_images_when_config_changes
+    read
+    generate_images
+    File.binwrite(published_post_1_image_path, "unchanged")
+
+    @config = Jekyll::Utils.deep_merge_hashes(@config, "og_image" => { "header" => { "color" => "#ff0000" } })
+    read
+    generate_images
+
+    refute_equal "unchanged", File.binread(published_post_1_image_path)
+  end
+
+  def test_regenerates_image_when_logo_file_appears
+    @config = Jekyll::Utils.deep_merge_hashes(@config, "og_image" => { "image" => "/assets/logo.png" })
+
+    read
+    capture_warnings { generate_images }
+    File.binwrite(published_post_1_image_path, "unchanged")
+
+    solid_image(20, 20, [ 255, 0, 0 ]).write_to_file(source_dir("assets", "logo.png"))
+    read
+    generate_images
+
+    refute_equal "unchanged", File.binread(published_post_1_image_path)
+  end
+
+  def test_force_regenerates_up_to_date_images
+    @config = Jekyll::Utils.deep_merge_hashes(@config, "og_image" => { "force" => true })
+
+    read
+    generate_images
+    File.binwrite(published_post_1_image_path, "unchanged")
+
+    read
+    generate_images
+
+    refute_equal "unchanged", File.binread(published_post_1_image_path)
+  end
+
+  def test_force_applies_only_to_first_build_of_a_generator
+    @config = Jekyll::Utils.deep_merge_hashes(@config, "og_image" => { "force" => true })
+
+    read
+    generate_images
+    File.binwrite(published_post_1_image_path, "unchanged")
+
+    # Rebuild under `jekyll serve`, which reuses the generator
+    generate_images
+
+    assert_equal "unchanged", File.binread(published_post_1_image_path)
+  end
+
+  def test_manifest_is_written_but_not_published
+    read
+    generate_images
+
+    assert_equal [ "posts/2018-01-12-a-week-with-the-apple-watch.png", "posts/2018-02-07-advanced-markdown-tips.png" ],
+      JSON.parse(File.read(manifest_path)).keys
+
+    read
+    refute @site.static_files.any? { |file| file.name == ".jekyll-og-image.json" }
+  end
+
   def test_does_not_register_duplicate_static_files_for_existing_images
     FileUtils.mkdir_p(File.dirname(published_post_1_image_path))
     File.binwrite(published_post_1_image_path, "stub")
@@ -238,7 +356,7 @@ class JekyllOgImageTest < Minitest::Test
     generate_images
 
     matching_files = @site.static_files.select do |file|
-      file.relative_path == "/assets/images/og/posts/a-week-with-the-apple-watch.png"
+      file.relative_path == "/assets/images/og/posts/2018-01-12-a-week-with-the-apple-watch.png"
     end
 
     assert_equal 1, matching_files.size
