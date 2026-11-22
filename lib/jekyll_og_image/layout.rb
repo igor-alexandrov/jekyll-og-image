@@ -28,6 +28,10 @@ class JekyllOgImage::Layout
     scaled(150)
   end
 
+  def description_dpi
+    scaled(200)
+  end
+
   # Space between the header and whatever is next to or below it
   def gap
     scaled(30)
@@ -70,6 +74,16 @@ class JekyllOgImage::Layout
   # How tall the header can be without reaching the metadata line
   def header_max_height(metadata_line_height)
     @config.canvas.height - header_top - bottom - metadata_line_height - gap
+  end
+
+  # Where the description starts, below a header of the given height
+  def description_top(header_height)
+    header_top + header_height + gap
+  end
+
+  # How tall the description can be between the header and the metadata line
+  def description_max_height(header_height, metadata_line_height)
+    @config.canvas.height - description_top(header_height) - bottom - metadata_line_height - gap
   end
 
   private

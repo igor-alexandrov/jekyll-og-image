@@ -492,12 +492,104 @@ class JekyllOgImageTest < Minitest::Test
     assert_equal JekyllOgImage::Layout.new(config).bottom, canvas.y_position
   end
 
+  def test_description_from_front_matter
+    configure_description("source" => "description")
+    read
+    post = find_post("a-week-with-the-apple-watch")
+    post.data["description"] = "A smartwatch\n  from Apple."
+
+    assert_equal "A smartwatch from Apple.", @og_image.send(:description_for, post, og_image_config)
+  end
+
+  def test_description_from_excerpt_is_plain_text
+    configure_description("source" => "excerpt")
+    read
+    post = find_post("a-week-with-the-apple-watch")
+    post.data["excerpt"] = Jekyll::Excerpt.new(post)
+    post.data["excerpt"].content = "A [watch]({{ site.url }}/watch) is *great* & `small`."
+
+    assert_equal "A watch is great & small.", @og_image.send(:description_for, post, og_image_config)
+  end
+
+  def test_description_keeps_first_sentences
+    configure_description("source" => "excerpt", "sentences" => 1)
+    read
+    post = find_post("a-week-with-the-apple-watch")
+
+    assert_equal "The Apple Watch is a smartwatch developed by Apple Inc.",
+      @og_image.send(:description_for, post, og_image_config)
+  end
+
+  def test_no_description_by_default
+    read
+    post = find_post("a-week-with-the-apple-watch")
+    post.data["description"] = "Short description"
+
+    assert_nil @og_image.send(:description_for, post, og_image_config)
+  end
+
+  def test_description_is_drawn_below_header
+    @config = Jekyll::Utils.deep_merge_hashes(@config, "og_image" => { "metadata" => { "fields" => [] } })
+    read
+    generate_images
+    _, _, _, without_height = trimmed(published_post_1_image_path)
+
+    configure_description("source" => "excerpt", "sentences" => 1)
+    @config = Jekyll::Utils.deep_merge_hashes(@config, "og_image" => { "metadata" => { "fields" => [] } })
+    read
+    generate_images
+    _, top, _, height = trimmed(published_post_1_image_path)
+
+    assert_operator height, :>, without_height
+    assert_operator top + height, :<=, 600 - 80 - 30
+  end
+
+  def test_description_is_left_out_when_title_fills_the_card
+    @config = Jekyll::Utils.deep_merge_hashes(@config, "og_image" => { "metadata" => { "fields" => [] } })
+    read
+    find_post("a-week-with-the-apple-watch").data["title"] = "A Week With the Apple Watch " * 6
+    generate_images
+    without = File.binread(published_post_1_image_path)
+
+    configure_description("source" => "excerpt")
+    @config = Jekyll::Utils.deep_merge_hashes(@config, "og_image" => { "metadata" => { "fields" => [] } })
+    read
+    find_post("a-week-with-the-apple-watch").data["title"] = "A Week With the Apple Watch " * 6
+    generate_images
+
+    assert_equal without, File.binread(published_post_1_image_path)
+  end
+
+  def test_regenerates_image_when_description_changes
+    configure_description("source" => "description")
+    read
+    generate_images
+    File.binwrite(published_post_1_image_path, "unchanged")
+
+    find_post("a-week-with-the-apple-watch").data["description"] = "A new description."
+    generate_images
+
+    refute_equal "unchanged", File.binread(published_post_1_image_path)
+  end
+
   private
 
   def capture_warnings
     warnings = []
     Jekyll.logger.stub(:warn, ->(_topic, message) { warnings << message }) { yield }
     warnings
+  end
+
+  def configure_description(description)
+    @config = Jekyll::Utils.deep_merge_hashes(@config, "og_image" => { "description" => description })
+  end
+
+  def og_image_config
+    JekyllOgImage.config
+  end
+
+  def trimmed(path)
+    load_image(path).find_trim(background: [ 255, 255, 255 ], threshold: 10)
   end
 
   def find_post(slug)

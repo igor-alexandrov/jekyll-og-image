@@ -124,6 +124,12 @@ Paths to images (`image.path`, `canvas.background_image`) are relative to the si
   * `font_family` – The font family of the content text. Default: `Helvetica, Regular`
   * `color` – The color of the content text. Default: `#535358`
 
+* `description` – Text drawn below the title, such as a summary or the first sentence of the post. It wraps, shrinks to fit above the metadata line, and is left out when a long title leaves no room for it. Not drawn unless `source` is set.
+  * `source` – Where the text comes from: `excerpt` for the document's excerpt as plain text, or the name of a front matter field such as `description`. Default: `nil`
+  * `sentences` – Keep only this many sentences from the start of the text. Default: `nil`, which keeps it all
+  * `font_family` – The font family of the description text. Default: `Helvetica, Regular`
+  * `color` – The color of the description text. Default: `#535358`
+
 * `border_bottom` – The border bottom configuration options:
   * `width` – The width of the border bottom. Default: `0`
   * `fill` – The array of colors to fill the border bottom. Default: `["#000000"]`
@@ -272,6 +278,21 @@ This configuration:
 - Shows author, date, and reading_time in the metadata section
 - Uses a pipe separator between metadata fields
 - Formats dates as "15 February 2024"
+
+### Description
+
+```yaml
+# _config.yml
+og_image:
+  domain: "igor.works"
+  description:
+    source: "excerpt"
+    sentences: 1
+```
+
+![Example 5](examples/5.png)
+
+This draws the first sentence of each post's excerpt below the title. Use `source: "description"` to read a `description` field from front matter instead, and set `og_image.description` in a post's front matter to change it for that post.
 
 
 ## Contributing

@@ -25,6 +25,15 @@ class JekyllOgImage::LayoutTest < Minitest::Test
     assert_equal 520, layout.content_width
   end
 
+  def test_description_fits_between_header_and_metadata_line
+    layout = layout_for({})
+
+    assert_equal 200, layout.description_dpi
+    assert_equal 100 + 120 + 30, layout.description_top(120)
+    # 600px canvas: below the description top, a 30px gap, a 20px metadata line and the 80px bottom margin
+    assert_equal 600 - 250 - 80 - 20 - 30, layout.description_max_height(120, 20)
+  end
+
   def test_header_leaves_room_for_logo
     assert_equal 1040 - 150 - 30, layout_for("image" => "/logo.png").header_width
     assert_equal 520 - 75 - 15, layout_for("image" => "/logo.png", "canvas" => { "width" => 600 }).header_width
