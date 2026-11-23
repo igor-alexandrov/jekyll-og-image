@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "cgi"
 require "digest"
 
 class JekyllOgImage::Generator < Jekyll::Generator
@@ -109,8 +110,10 @@ class JekyllOgImage::Generator < Jekyll::Generator
       config.image.to_h,
       config.border_bottom&.to_h,
       config.metadata.to_h,
+      config.description.to_h,
       config.domain,
       item.data["title"],
+      description_for(item, config),
       config.metadata.fields.map { |field| metadata_value_for(item, field, config) },
       file_digest(site, config.image.path),
       file_digest(site, config.canvas.background_image)
@@ -149,7 +152,8 @@ class JekyllOgImage::Generator < Jekyll::Generator
     canvas = add_border_bottom(canvas, config, layout) if config.border_bottom
     logo = read_source_file(site, config.image.path, "og_image.image.path") if config.image.path
     canvas = add_image(canvas, logo, config, layout) if logo
-    canvas = add_header(canvas, item, config, layout)
+    canvas, header_height = add_header(canvas, item, config, layout)
+    canvas = add_description(canvas, item, config, layout, header_height)
     canvas = add_metadata(canvas, item, config, layout)
     canvas = add_domain(canvas, config, layout) if config.domain
 
@@ -196,13 +200,74 @@ class JekyllOgImage::Generator < Jekyll::Generator
     title = item.data["title"] || "Untitled"
     full_title = "#{config.header.prefix}#{title}#{config.header.suffix}"
 
-    canvas.text(full_title,
+    header_height = 0
+    canvas = canvas.text(full_title,
       width: layout.header_width,
       height: layout.header_max_height(content_line_height(config, layout)),
       color: config.header.color,
       dpi: layout.header_dpi,
       font: config.header.font_family
-    ) { |_canvas, _text| { x: layout.margin, y: layout.header_top } }
+    ) do |_canvas, text|
+      header_height = text.height
+      { x: layout.margin, y: layout.header_top }
+    end
+
+    [ canvas, header_height ]
+  end
+
+  # Fits the description between the header and the metadata line, shrinking it
+  # if needed, and leaves it out when there isn't room for a single line.
+  def add_description(canvas, item, config, layout, header_height)
+    description = description_for(item, config)
+    return canvas if description.nil? || description.empty?
+
+    max_height = layout.description_max_height(header_height, content_line_height(config, layout))
+    return canvas if max_height < description_line_height(config, layout)
+
+    canvas.text(description,
+      width: layout.header_width,
+      height: max_height,
+      color: config.description.color,
+      dpi: layout.description_dpi,
+      font: config.description.font_family
+    ) { |_canvas, _text| { x: layout.margin, y: layout.description_top(header_height) } }
+  end
+
+  def description_line_height(config, layout)
+    Vips::Image.text("Ay", dpi: layout.description_dpi, font: config.description.font_family).height
+  end
+
+  # Plain text of the configured front matter field or of the excerpt, cut to the
+  # configured number of sentences
+  def description_for(item, config)
+    source = config.description.source
+    return if source.nil? || source.to_s.empty?
+
+    text = source == "excerpt" ? excerpt_text(item) : item.data[source]&.to_s
+    return if text.nil?
+
+    text = text.gsub(/\s+/, " ").strip
+    sentences = config.description.sentences
+    sentences ? first_sentences(text, sentences) : text
+  end
+
+  # Excerpts are Markdown with Liquid when generators run, so convert them to
+  # HTML and keep only the text.
+  def excerpt_text(item)
+    excerpt = item.data["excerpt"]
+    return if excerpt.nil?
+
+    markup = (excerpt.respond_to?(:content) ? excerpt.content : excerpt).to_s
+    markup = markup.gsub(/\{%.*?%\}|\{\{.*?\}\}/m, "")
+    converter = item.site.find_converter_instance(Jekyll::Converters::Markdown)
+    html = converter.convert(markup)
+    # Block tags separate words, inline tags such as <em> and <code> don't
+    html = html.gsub(%r{</?(?:p|br|div|li|ol|ul|h[1-6]|blockquote|pre|table|tr|td|th)\b[^>]*>}i, " ")
+    CGI.unescapeHTML(html.gsub(/<[^>]*>/, ""))
+  end
+
+  def first_sentences(text, count)
+    text.split(/(?<=[.!?])\s+(?=["“'‘(\[]?[[:upper:][:digit:]])/).first(count.to_i).join(" ")
   end
 
   def add_metadata(canvas, item, config, layout)

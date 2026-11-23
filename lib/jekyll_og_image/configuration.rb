@@ -34,6 +34,14 @@ class JekyllOgImage::Configuration
     end
   end
 
+  # Text below the header, read from a front matter field or the document's
+  # excerpt, optionally cut to its first sentences. Not drawn unless source is set.
+  Description = Data.define(:source, :sentences, :font_family, :color) do
+    def initialize(source: nil, sentences: nil, font_family: "Helvetica, Regular", color: "#535358")
+      super
+    end
+  end
+
   Metadata = Data.define(:fields, :separator, :date_format) do
     def initialize(fields: [ "date", "tags" ], separator: " • ", date_format: "%B %d, %Y")
       super
@@ -110,6 +118,10 @@ class JekyllOgImage::Configuration
 
   def border_bottom
     build_section(Border, "border_bottom") if @raw_config["border_bottom"]
+  end
+
+  def description
+    build_section(Description, "description")
   end
 
   def metadata

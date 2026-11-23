@@ -48,6 +48,32 @@ class JekyllOgImage::ConfigurationTest < Minitest::Test
     assert config.verbose?
   end
 
+  def test_default_description
+    description = @default_config.description
+
+    assert_nil description.source
+    assert_nil description.sentences
+    assert_equal "Helvetica, Regular", description.font_family
+    assert_equal "#535358", description.color
+  end
+
+  def test_custom_description
+    config = JekyllOgImage::Configuration.new(
+      { "description" => { "source" => "excerpt", "sentences" => 1, "font_family" => "Georgia", "color" => "#333" } }
+    )
+
+    assert_equal "excerpt", config.description.source
+    assert_equal 1, config.description.sentences
+    assert_equal "Georgia", config.description.font_family
+    assert_equal "#333", config.description.color
+  end
+
+  def test_unknown_description_option
+    config = JekyllOgImage::Configuration.new({ "description" => { "lines" => 2 } })
+
+    assert_raises(Jekyll::Errors::InvalidConfigurationError) { config.description }
+  end
+
   def test_default_skip_drafts
     assert @default_config.skip_drafts?
   end
